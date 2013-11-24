@@ -1,5 +1,4 @@
 #include "display.h"
-#include <string>
 using namespace std;
 
 Display::Display()
@@ -9,7 +8,7 @@ Display::Display()
 	{
 		display[i] = new char [WIDTH];
 		for (int j = 0; j < WIDTH; j++)
-			display[i][j] = '.';
+			display[i][j] = defaultFloor[i][j];
 	}
 }
 Display::~Display()
