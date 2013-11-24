@@ -136,13 +136,11 @@ const char defaultFloor[HEIGHT][WIDTH] =
  '-', '-', '|'}};
 
 class Display{
-	char **display;
+	char display[HEIGHT][WIDTH];
 public:
 	Display();
-	~Display();
-	char **getDisplay();
 	void setChar(int row, int col, char c);
-	char *getChar(int row, int col);
+	char getChar(int row, int col);
 	friend std::istream &operator>>(std::istream &in, Display &d);
 	friend std::ostream &operator<<(std::ostream &out, const Display &d);
 };
