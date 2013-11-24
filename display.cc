@@ -3,30 +3,19 @@ using namespace std;
 
 Display::Display()
 {
-	display = new char* [HEIGHT];
 	for (int i = 0; i < HEIGHT; i++)
 	{
-		display[i] = new char [WIDTH];
 		for (int j = 0; j < WIDTH; j++)
 			display[i][j] = defaultFloor[i][j];
 	}
-}
-Display::~Display()
-{
-	for (int i = 0; i < HEIGHT; i++)
-		delete[] display[i];
-}
-char** Display::getDisplay()
-{
-	return display;
 }
 void Display::setChar(int row, int col, char c)
 {
 	display[row][col] = c;
 }
-char* Display::getChar(int row, int col)
+char Display::getChar(int row, int col)
 {
-	return &display[row][col];
+	return display[row][col];
 }
 istream& operator>>(istream &in, Display &d)
 {
@@ -42,6 +31,10 @@ istream& operator>>(istream &in, Display &d)
 ostream& operator<<(ostream &out, const Display &d)
 {
 	for (int i = 0; i < HEIGHT; i++)
-		out << d.display[i] << endl;
+	{
+		for (int j = 0; j < WIDTH; j++)
+			out << d.display[i][j];
+		out << endl;
+	}
 	return out;
 }
