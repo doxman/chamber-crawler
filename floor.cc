@@ -5,22 +5,21 @@
 using namespace std;
 
 // PRIVATE METHODS
-void Floor::flood(char floodChar, char ***gridptr, int r, int c, int chamberNum)
+void Floor::flood(char floodChar, char grid[][WIDTH], int r, int c, int chamberNum)
 {
-	char **grid = *gridptr;
 	posn temp = {r, c};
 	chambers[chamberNum].tiles.push_back(temp);
 	grid[r][c] = floodChar;
 	if (r > 0 && grid[r-1][c]==FLOOR)
-		flood(floodChar, &grid, r-1, c, chamberNum);
+		flood(floodChar, grid, r-1, c, chamberNum);
 	if (r < (HEIGHT - 1) && grid[r+1][c]==FLOOR)
-		flood(floodChar, &grid, r+1, c, chamberNum);
+		flood(floodChar, grid, r+1, c, chamberNum);
 	if (c > 0 && grid[r][c-1]==FLOOR)
-		flood(floodChar, &grid, r, c-1, chamberNum);
+		flood(floodChar, grid, r, c-1, chamberNum);
 	if (c < (WIDTH - 1) && grid[r][c+1]==FLOOR)
-		flood(floodChar, &grid, r, c+1, chamberNum);
+		flood(floodChar, grid, r, c+1, chamberNum);
 }
-void Floor::floodGrid (char **grid)
+void Floor::floodGrid (char grid[][WIDTH])
 {
 	char floodChar = 'a';
 	int chamberNum = floodChar - 'a';
@@ -30,14 +29,14 @@ void Floor::floodGrid (char **grid)
 		{
 			if (grid[r][c] == FLOOR)
 			{
-				flood(floodChar, &grid, r,c, chamberNum);
+				flood(floodChar, grid, r,c, chamberNum);
 				floodChar++;
 				chamberNum++;
 			}
 		}
 	}
 }
-void Floor::unfloodGrid(char **grid)
+void Floor::unfloodGrid(char grid[][WIDTH])
 {
 	for (int i = 0; i < HEIGHT; i++)
 	{
@@ -74,12 +73,12 @@ void Floor::spawnObject(char c)
 		player.initGold(playerGold);
 		if (playerHP != 0)
 			player.initHP(playerHP);
-		d->setChar(temp.row, temp.col, c);
+		d.setChar(temp.row, temp.col, c);
 	}
 	else if (c == STAIRS)
 	{
 		stairs.initLoc(temp);
-		d->setChar(temp.row, temp.col, c);
+		d.setChar(temp.row, temp.col, c);
 	}
 	else if (c == POTION)
 	{
@@ -97,7 +96,7 @@ void Floor::spawnObject(char c)
 			potions[numPotions].initPotion(WA);
 		else
 			potions[numPotions].initPotion(WD);
-		d->setChar(temp.row, temp.col, c);
+		d.setChar(temp.row, temp.col, c);
 		numPotions++;
 	}
 	else if (c == GOLD)
@@ -108,7 +107,7 @@ void Floor::spawnObject(char c)
 			golds[numGolds].initValue(NORMAL);
 		else // 3/8 chance used for small hoard; no entry for dragon hoard as of yet
 			golds[numGolds].initValue(SMALL_HOARD);
-		d->setChar(temp.row, temp.col, c);
+		d.setChar(temp.row, temp.col, c);
 		numGolds++;
 	}
 	else if (c == ENEMY)
@@ -127,7 +126,7 @@ void Floor::spawnObject(char c)
 			enemies[numEnemies].initRace(PHOENIX);
 		else 				  // merchant 1/9
 			enemies[numEnemies].initRace(MERCHANT);
-		d->setChar(temp.row, temp.col, enemies[numEnemies].getObjectChar());
+		d.setChar(temp.row, temp.col, enemies[numEnemies].getObjectChar());
 		numEnemies++;
 	}
 }
@@ -153,12 +152,12 @@ bool Floor::tryMove(int dir)
 		row = current.row + 1, col = current.col;
 	else // southeast
 		row = current.row + 1, col = current.col + 1;
-	if (*d->getChar(row, col) == STAIRS) // go to next floor immediately
+	if (d.getChar(row, col) == STAIRS) // go to next floor immediately
 	{
 		nextFloor();
 		return false;
 	}
-	if (*d->getChar(row, col) == GOLD)
+	if (d.getChar(row, col) == GOLD)
 	{
 		int goldNum;
 		for (goldNum = 0; goldNum < numGolds; goldNum++)
@@ -170,7 +169,7 @@ bool Floor::tryMove(int dir)
 		if (golds[goldNum].getValue() != 6) // If not a dragon hoard
 		{
 			player.addGold(golds[goldNum].getValue());
-			d->setChar(row, col, FLOOR);
+			d.setChar(row, col, FLOOR);
 			// Delete picked-up gold from gold array
 			numGolds--;
 			for (goldNum = goldNum; goldNum < numGolds; goldNum++)
@@ -179,12 +178,12 @@ bool Floor::tryMove(int dir)
 		// Add code for dragon hoards (value 6) later
 	}
 	// Can move if tile is floor, passage, or door (after gold is collected)
-	char target = *d->getChar(row, col);
+	char target = d.getChar(row, col);
 	if (target == FLOOR || target == '#' || target == '+')
 	{
-		d->setChar(player.getLoc().row, player.getLoc().col, player.getTileChar());
+		d.setChar(player.getLoc().row, player.getLoc().col, player.getTileChar());
 		player.setTileChar(target);
-		d->setChar(row, col, PLAYER);
+		d.setChar(row, col, PLAYER);
 		player.move(dir);
 	}
 	else // insulting message?
@@ -237,7 +236,7 @@ bool Floor::playerTurn()
 			checkRow = pRow + 1, checkCol = pCol;
 		else if (temp == STRSEAST)
 			checkRow = pRow + 1, checkCol = pCol + 1;
-		if (*d->getChar(checkRow, checkCol) == 'P')
+		if (d.getChar(checkRow, checkCol) == 'P')
 		{
 			int potNum;
 			for (potNum = 0; potNum < numPotions; potNum++)
@@ -247,7 +246,7 @@ bool Floor::playerTurn()
 					break;
 			}
 			player.usePotion(potions[potNum]);
-			d->setChar(checkRow, checkCol, FLOOR);
+			d.setChar(checkRow, checkCol, FLOOR);
 			// delete used potion from array
 			numPotions--;
 			for (potNum = potNum; potNum < numPotions; potNum++)
@@ -316,7 +315,7 @@ void Floor::moveEnemy(Enemy *e)
 		{
 			if (i == loc.row && j == loc.col)
 				continue;
-			if (*d->getChar(i, j) == FLOOR)
+			if (d.getChar(i, j) == FLOOR)
 			{
 				open[counter] = true;
 				availableMoves++;
@@ -326,7 +325,7 @@ void Floor::moveEnemy(Enemy *e)
 	}
 	if (availableMoves == 0) // All adjacent tiles are blocked
 		return;
-	d->setChar(loc.row, loc.col, FLOOR); // Clears the tile the enemy is leaving
+	d.setChar(loc.row, loc.col, FLOOR); // Clears the tile the enemy is leaving
 	int move = rand() % availableMoves;
 	counter = 0;
 	for (int i = NORTHWEST; i < numDirections; i++)
@@ -340,12 +339,14 @@ void Floor::moveEnemy(Enemy *e)
 			counter++;
 	}
 	loc = e->getLoc(); // New position
-	d->setChar(loc.row, loc.col, e->getObjectChar()); // Draws the enemy's new position
+	d.setChar(loc.row, loc.col, e->getObjectChar()); // Draws the enemy's new position
 }
 
 // PUBLIC METHODS
 Floor::Floor(char pR)
 {
+	for (int i = 0; i < numChambers; i++)
+		chambers[i].tiles = vector<posn>();
 	playerRace = pR;
 	floorNum = 1;
 	playerHP = 0;
@@ -354,18 +355,20 @@ Floor::Floor(char pR)
 }
 Floor::~Floor()
 {
-	delete d;
 }
 void Floor::init()
 {
-	delete d;
-	d = new Display();
+	d = Display();
 	playerChamber = -1;
 	numPotions = 0;
 	numGolds = 0;
 	numEnemies = 0;
-	char **temp;
-	temp = d->getDisplay();
+	char temp [HEIGHT] [WIDTH];
+	for (int i = 0; i < HEIGHT; i++)
+	{
+		for (int j = 0; j < WIDTH; j++)
+			temp[i][j] = d.getChar(i, j);
+	}
 	floodGrid(temp);
 	unfloodGrid(temp);
 	spawnObject(PLAYER);
@@ -391,7 +394,7 @@ void Floor::round()
 }
 void Floor::print()
 {
-	cout << *d;
+	cout << d;
 	stringstream s;
 	s << "Race: " << player.getRace() << " Gold: " << player.getGold();
 	cout << s.str();
@@ -438,6 +441,12 @@ void Floor::nextFloor()
 	for (i = 0; i < enemiesSpawned; i++)
 		enemies[i] = Enemy();
 	floorNum++;
+	// Empty chambers
+	for (i = 0; i < numChambers; i++)
+	{
+		while (chambers[i].tiles.size() > 0)
+			chambers[i].tiles.pop_back();
+	}
 	init();
 }
 int Floor::getFloorNum()
