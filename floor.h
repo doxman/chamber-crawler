@@ -26,7 +26,7 @@ struct Chamber
 
 class Floor
 {
-	Display *d;
+	Display d;
 	Chamber chambers[numChambers];
 	Player player;
 	Stairs stairs;
@@ -41,9 +41,9 @@ class Floor
 	int floorNum;
 	int playerHP; 			  // Holds player HP when transitioning between floors
 	double playerGold;		  // Holds player gold when transitioning between floors
-	void flood(char floodChar, char ***gridptr, int r, int c, int chamberNum);
-	void floodGrid(char **grid);
-	void unfloodGrid(char **grid);
+	void flood(char floodChar, char grid[][WIDTH], int r, int c, int chamberNum);
+	void floodGrid(char grid[][WIDTH]);
+	void unfloodGrid(char grid[][WIDTH]);
 	void spawnObject(char c); // Spawns a different object depending on the symbol given
 	bool tryMove(int dir); // False if player moved onto stairs
 	bool playerTurn(); // False if not followed by enemy turns (ie. moved up a floor or quit)
