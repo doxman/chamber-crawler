@@ -11,8 +11,4 @@ object.o: object.cc object.h
 	g++ -c object.cc
 	
 display.o: display.h display.cc
-<<<<<<< HEAD
 	g++ -c display.cc
-=======
-	g++ -c display.cc
->>>>>>> ea3d8adced5d4200f7b6240001b608e6233c4fd7
