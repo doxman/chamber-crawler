@@ -258,6 +258,71 @@ bool Floor::playerTurn()
 	}
 	else if (temp == "a") // Attack code here
 	{
+		int checkRow;
+		int checkCol;
+		cin >> temp;
+		if (temp == STRNWEST)
+			checkRow = pRow - 1, checkCol = pCol - 1;
+		else if (temp == STRNORTH)
+			checkRow = pRow - 1, checkCol = pCol;
+		else if (temp == STRNEAST)
+			checkRow = pRow - 1, checkCol = pCol + 1;
+		else if (temp == STRWEST)
+			checkRow = pRow, checkCol = pCol - 1;
+		else if (temp == STREAST)
+			checkRow = pRow, checkCol = pCol + 1;
+		else if (temp == STRSWEST)
+			checkRow = pRow + 1, checkCol = pCol - 1;
+		else if (temp == STRSOUTH)
+			checkRow = pRow + 1, checkCol = pCol;
+		else if (temp == STRSEAST)
+			checkRow = pRow + 1, checkCol = pCol + 1;
+		char c = d.getChar(checkRow, checkCol);
+		if (c == 'V' || c == 'W' || c == 'T' || c == 'N' || c == 'X' || c == 'M' || c == 'D')
+		{
+			int enemyNum;
+			posn p;
+			for (enemyNum = 0; enemyNum < numEnemies; enemyNum++)
+			{
+				p = enemies[enemyNum].getLoc();
+				if (checkRow == p.row && checkCol == p.col)
+					break;
+			}
+			if (c == 'M') {
+				angryMerchants = true;
+			}
+			if(player.attack(&enemies[enemyNum]))
+			{
+				if (c == 'D')
+				{
+					d.setChar(checkRow, checkCol, FLOOR);
+				}
+				else if (c == 'M')
+				{
+					golds[numGolds].setLoc(p);
+					golds[numGolds].initValue(MERCHANT_HOARD);
+					d.setChar(checkRow, checkCol, GOLD);
+					numGolds++;
+				}
+				else
+				{
+					golds[numGolds].setLoc(p);
+					golds[numGolds].initValue(NORMAL);
+					d.setChar(checkRow, checkCol, GOLD);
+					numGolds++;
+					
+				}
+				// delete dead enemy from array
+				numEnemies--;
+				for (enemyNum = enemyNum; enemyNum < numEnemies; enemyNum++)
+					enemies[enemyNum] = enemies[enemyNum + 1];
+				//cout << "Gold number "<< numGolds << " is in position " << golds[numGolds-1].getLoc().row << " " << golds[numGolds-1].getLoc().col << " with value " << golds[numGolds-1].getValue() << endl;
+			}
+		}
+		else // Insulting message?
+		{
+		}
+		
 	}
 	else if (temp == "r") // Restart code here
 	{
@@ -320,11 +385,23 @@ void Floor::moveEnemy(Enemy *e)
 				open[counter] = true;
 				availableMoves++;
 			}
+			if (d.getChar(i, j) == PLAYER)
+			{
+				if (angryMerchants || e->getRace()!= "Merchant") {
+					availableMoves = -10;
+				}
+			}
 			counter++;
 		}
 	}
-	if (availableMoves == 0) // All adjacent tiles are blocked
+	if (availableMoves < 1) // All adjacent tiles are blocked
+	{
+		//TBD: Check if a dragon/merchant would actually attack
+		if (availableMoves < 0) {
+			player.getAttacked(*e);
+		}
 		return;
+	}
 	d.setChar(loc.row, loc.col, FLOOR); // Clears the tile the enemy is leaving
 	int move = rand() % availableMoves;
 	counter = 0;
@@ -351,6 +428,7 @@ Floor::Floor(char pR)
 	floorNum = 1;
 	playerHP = 0;
 	playerGold = 0;
+	angryMerchants = false;
 	srand(time(NULL)); // Sets up rand()
 }
 Floor::~Floor()
@@ -408,23 +486,23 @@ void Floor::print()
 	cout << "Action: " << endl; // change this to actually display stuff!
 	// Print list of posns in each chamber
 	/* BLOCK SAVED FOR TESTING
-	for (int i = 0; i < numChambers; i++)
-	{
-		cout << "Chamber: " << i << endl;
-		int numTiles = chambers[i].tiles.size();
-		for (int j = 0; j < numTiles; j++)
-			cout << "(" << chambers[i].tiles[j].row << ", " 
-						<< chambers[i].tiles[j].col << ")" << endl;
-	}
-	// BLOCK SAVED FOR TESTING*/
+	 for (int i = 0; i < numChambers; i++)
+	 {
+	 cout << "Chamber: " << i << endl;
+	 int numTiles = chambers[i].tiles.size();
+	 for (int j = 0; j < numTiles; j++)
+	 cout << "(" << chambers[i].tiles[j].row << ", "
+	 << chambers[i].tiles[j].col << ")" << endl;
+	 }
+	 // BLOCK SAVED FOR TESTING*/
 	// Print coordinates of each enemy, in sorted order
 	/* BLOCK SAVED FOR TESTING
-	for (int i = 0; i < numEnemies; i++)
-	{
-		cout << "Enemy " << i << " position: " << enemies[i].getLoc().row
-			 << ", " << enemies[i].getLoc().col << endl;
-	}
-	// BLOCK SAVED FOR TESTING*/
+	 for (int i = 0; i < numEnemies; i++)
+	 {
+	 cout << "Enemy " << i << " position: " << enemies[i].getLoc().row
+	 << ", " << enemies[i].getLoc().col << endl;
+	 }
+	 // BLOCK SAVED FOR TESTING*/
 }
 void Floor::nextFloor()
 {

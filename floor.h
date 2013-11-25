@@ -31,11 +31,12 @@ class Floor
 	Player player;
 	Stairs stairs;
 	Potion potions[potionsSpawned];
-	Gold golds[goldsSpawned];
+	Gold golds[goldsSpawned + enemiesSpawned];
 	Enemy enemies[enemiesSpawned];
 	int numPotions;
 	int numGolds;
 	int numEnemies;
+	bool angryMerchants;
 	int playerChamber;		  // Stores which chamber the player spawned in
 	char playerRace;		  // Stores the player's race, as a character
 	int floorNum;

@@ -1,11 +1,13 @@
 #include "object.h"
 #include <cstdlib>
+#include <cmath>
+#include <iostream>
 using namespace std;
 
 // Equality test for races
 bool operator==(race arg1, race arg2)
 {
-	if (arg1.hp == arg2.hp && arg1.atk == arg2.atk && arg1.def == arg2.def 
+	if (arg1.hp == arg2.hp && arg1.atk == arg2.atk && arg1.def == arg2.def
 		&& arg1.name == arg2.name)
 		return true;
 	return false;
@@ -63,8 +65,7 @@ void Potion::die(){}
 Gold::Gold(): Object(GOLD), value(0){}
 void Gold::initValue(int v)
 {
-	if (value == 0)
-		value = v;
+	value = v;
 }
 int Gold::getValue()
 {
@@ -202,6 +203,28 @@ void Player::usePotion(Potion &p)
 	if (getDef() < 0)
 		setDef(0);
 }
+bool Player::attack(Enemy * e){
+	double damage = ceil((100.0/(100.0 + (double)e->getDef()))*((double)getAtk()));
+	e->setHP((e->getHP()-damage));
+	//Display hit
+	return (e->getHP() <= 0);
+	
+}
+bool Player::getAttacked(Enemy e){
+	int hit = rand() % 2;
+	if (hit == 1) {
+		double damage = ceil((100.0/(100.0 + (double)getDef()))*((double)e.getAtk()));
+		setHP((getHP()-damage));
+		//Display hit
+	}
+	else
+	{
+		//Display miss
+		//cout << "MISS!" << endl;
+	}
+	return (getHP() <= 0);
+}
+
 void Player::die(){}
 
 // Since dragons are generated before other enemies, default race should be dragon! (?)
@@ -211,6 +234,9 @@ void Enemy::initRace(race r)
 	if (eRace == DRAGON)
 	{
 		eRace = r;
+		setHP(eRace.hp);
+		setAtk(eRace.atk);
+		setDef(eRace.def);
 		if (eRace.name == "Goblin")
 			setObjectChar('N');
 		else if (eRace.name == "Phoenix")
@@ -218,5 +244,9 @@ void Enemy::initRace(race r)
 		else // except for goblin and phoenix, first character of name is also character on display
 			setObjectChar(eRace.name[0]);
 	}
+}
+string Enemy::getRace()
+{
+	return eRace.name;
 }
 void Enemy::die(){}

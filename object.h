@@ -76,11 +76,11 @@ class Object
 	posn loc;
 protected:
 	void setObjectChar(char c); // Used by Enemy class to make different races look different
-	void setLoc(posn p);
 public:
 	Object(char oC);
 	char getObjectChar();
 	posn getLoc();
+	void setLoc(posn p);
 	void initLoc(posn p); // Only works when loc is the null position; used to initialize posn;
 	virtual void die() = 0; // Might get rid of this? Hasn't actually been used yet...
 };
@@ -123,16 +123,25 @@ class Character:public Object
 	int currentAtk;
 	int currentDef;
 protected:
-	void setHP(int hp);
 	void setAtk(int atk);
 	void setDef(int def);
 public:
 	Character (char oC);
 	void move(int dir);
+	void setHP(int hp);
 	int getHP();
 	int getAtk();
 	int getDef();
-	// virtual void attack() = 0;
+};
+
+class Enemy:public Character
+{
+	race eRace;
+public:
+	Enemy();
+	void initRace(race r);
+	std::string getRace();
+	void die();
 };
 
 class Player:public Character
@@ -152,15 +161,8 @@ public:
 	void addGold(double value);
 	void usePotion (Potion &p);
 	void die();
-};
-
-class Enemy:public Character
-{
-	race eRace;
-public:
-	Enemy();
-	void initRace(race r);
-	void die();
+	bool attack(Enemy * e); //Returns true if the attack kills the enemy
+	bool getAttacked(Enemy e); //Returns true if the attack kills the player
 };
 
 #endif
