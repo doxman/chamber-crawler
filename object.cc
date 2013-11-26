@@ -64,10 +64,19 @@ int Potion::getDef() {return defMod;}
 string Potion::getType() {return type;}
 void Potion::die(){}
 
-Gold::Gold(): Object(GOLD), value(0){}
+Gold::Gold(): Object(GOLD), value(0), guarded(false){}
 void Gold::initValue(int v)
 {
 	value = v;
+}
+
+void Gold::setGuarded(bool guard)
+{
+	guarded = guard;
+}
+bool Gold::isGuarded()
+{
+	return guarded;
 }
 int Gold::getValue()
 {
@@ -221,7 +230,7 @@ void Player::usePotion(Potion &p)
 	stringstream m;
 	m << getMessage() << "PC uses " << p.getType() << ". ";
 	setMessage(m.str());
-
+	
 }
 bool Player::attack(Enemy * e){
 	double damage = ceil((100.0/(100.0 + (double)e->getDef()))*((double)getAtk()));
@@ -259,7 +268,7 @@ bool Player::getAttacked(Enemy e){
 void Player::die(){}
 
 // Since dragons are generated before other enemies, default race should be dragon! (?)
-Enemy::Enemy(): Character(ENEMY), eRace(DRAGON) {}
+Enemy::Enemy(): Character(ENEMY), eRace(DRAGON), hoard(NULL){}
 void Enemy::initRace(race r)
 {
 	if (eRace == DRAGON)
@@ -280,4 +289,25 @@ string Enemy::getRace()
 {
 	return eRace.name;
 }
+
+void Enemy::initHoard(Gold * g)
+{
+	hoard = g;
+}
+void Enemy::freeHoard()
+{
+	hoard->setGuarded(false);
+}
+posn Enemy::hoardLoc()
+{
+	if (hoard != NULL)
+	{
+		return hoard->getLoc();
+	}
+	else
+	{
+		return nullPosn;
+	}
+}
+
 void Enemy::die(){}

@@ -111,9 +111,12 @@ public:
 class Gold:public Object
 {
 	int value;
+	bool guarded;
 public:
 	Gold();
 	void initValue(int v);
+	void setGuarded(bool guard);
+	bool isGuarded();
 	int getValue();
 	void die();
 };
@@ -138,10 +141,14 @@ public:
 class Enemy:public Character
 {
 	race eRace;
+	Gold * hoard;
 public:
 	Enemy();
 	void initRace(race r);
 	std::string getRace();
+	void initHoard(Gold * g);
+	void freeHoard();
+	posn hoardLoc();
 	void die();
 };
 

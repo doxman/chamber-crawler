@@ -104,9 +104,79 @@ void Floor::spawnObject(char c)
 		golds[numGolds].initLoc(temp);
 		choice = rand() % 8;
 		if (choice < 5)
+		{
 			golds[numGolds].initValue(NORMAL);
-		else // 3/8 chance used for small hoard; no entry for dragon hoard as of yet
+		}
+		else if (choice < 7)
+		{
 			golds[numGolds].initValue(SMALL_HOARD);
+		}
+		else
+		{
+			bool open[numDirections]; // Need to initialize these to false
+			for (int i = 0; i < numDirections; i++)
+				open[i] = false;
+			int availableSpaces = 0;
+			int counter = 0; // Goes through the 8 directions controlled by the array
+			for (int i = temp.row - 1; i <= temp.row + 1; i++)
+			{
+				for (int j = temp.col - 1; j <= temp.col + 1; j++)
+				{
+					if (i == temp.row && j == temp.col)
+						continue;
+					if (d.getChar(i, j) == FLOOR)
+					{
+						open[counter] = true;
+						availableSpaces++;
+					}
+					counter++;
+				}
+			}
+			if (availableSpaces < 1) // All adjacent tiles are blocked
+			{
+				golds[numGolds].initValue(SMALL_HOARD);//No room for a dragon, make this a small hoard instead
+			}
+			else
+			{
+				int dspace = rand() % availableSpaces;
+				counter = 0;
+				for (int i = NORTHWEST; i < numDirections; i++)
+				{
+					if (open[i] && counter == dspace)
+					{
+						//Spawn a dragon
+						golds[numGolds].initValue(DRAGON_HOARD);
+						golds[numGolds].setGuarded(true);
+						posn p;
+						if (i == NORTH)
+							p.row = temp.row - 1, p.col = temp.col;
+						else if (i == NORTHWEST)
+							p.row = temp.row - 1, p.col = temp.col - 1;
+						else if (i == NORTHEAST)
+							p.row = temp.row - 1, p.col = temp.col + 1;
+						else if (i == WEST)
+							p.row = temp.row, p.col = temp.col - 1;
+						else if (i == EAST)
+							p.row = temp.row, p.col = temp.col + 1;
+						else if (i == SOUTHWEST)
+							p.row = temp.row + 1, p.col = temp.col - 1;
+						else if (i == SOUTHEAST)
+							p.row = temp.row + 1, p.col = temp.col + 1;
+						else
+							p.row = temp.row + 1, p.col = temp.col;
+						enemies[numEnemies].initLoc(p);
+						enemies[numEnemies].initRace(DRAGON);
+						enemies[numEnemies].initHoard(&golds[numGolds]);
+						d.setChar(p.row, p.col, enemies[numEnemies].getObjectChar());
+						numEnemies++;
+						//cout << "Dragon hoard at: " << temp.row << "," << temp.col << endl;
+					}
+					if (open[i])
+						counter++;
+				}
+			}
+			
+		}
 		d.setChar(temp.row, temp.col, c);
 		numGolds++;
 	}
@@ -166,7 +236,7 @@ bool Floor::tryMove(int dir)
 			if (loc.row == row && loc.col == col)
 				break;
 		}
-		if (golds[goldNum].getValue() != 6) // If not a dragon hoard
+		if (!golds[goldNum].isGuarded()) // If not a dragon hoard
 		{
 			player.addGold(golds[goldNum].getValue());
 			d.setChar(row, col, FLOOR);
@@ -174,6 +244,10 @@ bool Floor::tryMove(int dir)
 			numGolds--;
 			for (goldNum = goldNum; goldNum < numGolds; goldNum++)
 				golds[goldNum] = golds[goldNum + 1];
+		}
+		else
+		{
+			player.setMessage(player.getMessage() + "Dragon scares PC away from their hoard. ");
 		}
 		// Add code for dragon hoards (value 6) later
 	}
@@ -296,6 +370,7 @@ bool Floor::playerTurn()
 				if (c == 'D')
 				{
 					d.setChar(checkRow, checkCol, FLOOR);
+					enemies[enemyNum].freeHoard();
 				}
 				else if (c == 'M')
 				{
@@ -385,11 +460,15 @@ void Floor::moveEnemy(Enemy *e)
 			if (d.getChar(i, j) == FLOOR)
 			{
 				open[counter] = true;
-				availableMoves++;
+				if (e->getRace()!= "Dragon") {
+				availableMoves++; //Only can move if not a dragon
+				}
 			}
 			if (d.getChar(i, j) == PLAYER)
 			{
-				if (angryMerchants || e->getRace()!= "Merchant") {
+				if ((angryMerchants || e->getRace()!= "Merchant")&&
+					(e->getRace()!= "Dragon" || ((abs(e->hoardLoc().row - i) <= 1)&&
+												 (abs(e->hoardLoc().col - j) <= 1)))) {
 					availableMoves = -10;
 				}
 			}
