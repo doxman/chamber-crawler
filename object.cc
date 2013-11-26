@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 // Equality test for races
@@ -60,6 +61,7 @@ void Potion::initPotion(race p)
 int Potion::getHP() {return hpMod;}
 int Potion::getAtk() {return atkMod;}
 int Potion::getDef() {return defMod;}
+string Potion::getType() {return type;}
 void Potion::die(){}
 
 Gold::Gold(): Object(GOLD), value(0){}
@@ -126,6 +128,7 @@ int Character::getDef()
 Player::Player(): Character(PLAYER), tileChar(FLOOR), pRace(HUMAN)
 {
 	gold = 0;
+	message = "";
 	setHP(HUMAN.hp);
 	setAtk(HUMAN.atk);
 	setDef(HUMAN.def);
@@ -145,6 +148,14 @@ double Player::getGold()
 string Player::getRace()
 {
 	return pRace.name;
+}
+string Player::getMessage()
+{
+	return message;
+}
+void Player::setMessage(string m)
+{
+	message = m;
 }
 void Player::initGold(double g) // Make this more selective later
 {
@@ -173,12 +184,17 @@ void Player::initRace(char c)
 }
 void Player::addGold(double value)
 {
+	int collected;
 	if (pRace == DWARF)
-		gold += 2 * value;
+		collected = 2 * value;
 	else if (pRace == ORC)
-		gold += value / 2;
+		collected = value / 2;
 	else
-		gold += value;
+		collected = value;
+	stringstream m;
+	m << getMessage() << "PC collects " << collected << " gold. ";
+	setMessage(m.str());
+	gold += collected;
 }
 void Player::usePotion(Potion &p)
 {
@@ -202,26 +218,41 @@ void Player::usePotion(Potion &p)
 		setAtk(0);
 	if (getDef() < 0)
 		setDef(0);
+	stringstream m;
+	m << getMessage() << "PC uses " << p.getType() << ". ";
+	setMessage(m.str());
+
 }
 bool Player::attack(Enemy * e){
 	double damage = ceil((100.0/(100.0 + (double)e->getDef()))*((double)getAtk()));
 	e->setHP((e->getHP()-damage));
-	//Display hit
-	return (e->getHP() <= 0);
+	bool lethal = (e->getHP() <= 0);
+	stringstream m;
+	m << getMessage() << "PC deals " << damage << " damage to " << e->getRace();
+	if (lethal) {
+		m << ", slaying it. ";
+	}
+	else
+	{
+		m << ", it has " << e->getHP() << " health remaining. ";
+	}
+	setMessage(m.str());
+	return lethal;
 	
 }
 bool Player::getAttacked(Enemy e){
 	int hit = rand() % 2;
+	stringstream m;
 	if (hit == 1) {
 		double damage = ceil((100.0/(100.0 + (double)getDef()))*((double)e.getAtk()));
 		setHP((getHP()-damage));
-		//Display hit
+		m << getMessage() << e.getRace() << " deals " << damage << " damage to PC. ";
 	}
 	else
 	{
-		//Display miss
-		//cout << "MISS!" << endl;
+		m << getMessage() << e.getRace() << " attacks and misses PC. ";
 	}
+	setMessage(m.str());
 	return (getHP() <= 0);
 }
 

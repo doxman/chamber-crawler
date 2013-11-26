@@ -37,6 +37,8 @@ class Floor
 	int numGolds;
 	int numEnemies;
 	bool angryMerchants;
+	bool quit;
+	bool restart;
 	int playerChamber;		  // Stores which chamber the player spawned in
 	char playerRace;		  // Stores the player's race, as a character
 	int floorNum;
@@ -57,7 +59,10 @@ public:
 	void init();
 	void round();
 	void nextFloor();
+	bool shouldQuit();
+	bool shouldRestart();
 	int getFloorNum();
+	void endGame();
 };
 
 #endif

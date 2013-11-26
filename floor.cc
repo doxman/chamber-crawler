@@ -326,9 +326,11 @@ bool Floor::playerTurn()
 	}
 	else if (temp == "r") // Restart code here
 	{
+		restart = true;
 	}
 	else if (temp == "q") // Quit code here
 	{
+		quit = true;
 	}
 	else // Catch invalid strings
 	{
@@ -396,9 +398,13 @@ void Floor::moveEnemy(Enemy *e)
 	}
 	if (availableMoves < 1) // All adjacent tiles are blocked
 	{
-		//TBD: Check if a dragon/merchant would actually attack
+		//TBD: Check if a dragon would actually attack
 		if (availableMoves < 0) {
-			player.getAttacked(*e);
+			bool lethal = player.getAttacked(*e);
+			if(lethal)
+			{
+				restart = true;
+			}
 		}
 		return;
 	}
@@ -428,6 +434,8 @@ Floor::Floor(char pR)
 	floorNum = 1;
 	playerHP = 0;
 	playerGold = 0;
+	quit = false;
+	restart = false;
 	angryMerchants = false;
 	srand(time(NULL)); // Sets up rand()
 }
@@ -483,7 +491,9 @@ void Floor::print()
 	cout << "HP: " << player.getHP() << endl;
 	cout << "Atk: " << player.getAtk() << endl;
 	cout << "Def: " << player.getDef() << endl;
-	cout << "Action: " << endl; // change this to actually display stuff!
+	cout << "Action: " << player.getMessage() << endl; // change this to actually display stuff!
+	
+	player.setMessage("");
 	// Print list of posns in each chamber
 	/* BLOCK SAVED FOR TESTING
 	 for (int i = 0; i < numChambers; i++)
@@ -527,7 +537,26 @@ void Floor::nextFloor()
 	}
 	init();
 }
+void Floor::endGame()
+{
+	if(floorNum > 8)
+	{
+		cout << "You Win! You can either play again, or quit" << endl;
+	}
+	else if (player.getHP() <= 0)
+	{
+		cout << "You are dead. You can either play again, or quit" << endl;
+	}
+}
 int Floor::getFloorNum()
 {
 	return floorNum;
+}
+bool Floor::shouldQuit()
+{
+	return quit;
+}
+bool Floor::shouldRestart()
+{
+	return restart;
 }

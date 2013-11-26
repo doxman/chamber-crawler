@@ -26,7 +26,7 @@ const char FLOOR = '.';
 const race HUMAN = {140, 20, 20, "Human"};
 const race DWARF = {100, 20, 30, "Dwarf"};
 const race ELF = {140, 30, 10, "Elf"};
-const race ORC = {180, 30, 25, "Orc"};
+const race ORC = {18000, 3000, 2500, "Orc"}; //Divide by 100, made orc op for testing
 
 // Enemy races
 const race VAMPIRE = {50, 25, 25, "Vampire"};
@@ -104,6 +104,7 @@ public:
 	int getHP();
 	int getAtk();
 	int getDef();
+	std::string getType();
 	void die();
 };
 
@@ -149,11 +150,14 @@ class Player:public Character
 	char tileChar;
 	race pRace;
 	double gold;
+	std::string message;
 public:
 	Player(); // Makes a default human player; placeholder
 	char getTileChar();
 	void setTileChar(char c);
 	double getGold();
+	void setMessage(std::string m);
+	std::string getMessage();
 	std::string getRace();
 	void initGold(double g); // Only works when gold is at 0; sets last floor's value
 	void initHP(int hp);   // Only works when hp is at race total; sets last floor's value
