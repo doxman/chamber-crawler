@@ -17,7 +17,7 @@ struct race
 };
 
 bool operator==(race arg1, race arg2);
-
+bool operator==(posn arg1, posn arg2);
 const posn nullPosn = {-1, -1};
 
 const char FLOOR = '.';
@@ -26,7 +26,7 @@ const char FLOOR = '.';
 const race HUMAN = {140, 20, 20, "Human"};
 const race DWARF = {100, 20, 30, "Dwarf"};
 const race ELF = {140, 30, 10, "Elf"};
-const race ORC = {18000, 3000, 2500, "Orc"}; //Divide by 100, made orc op for testing
+const race ORC = {180, 30, 25, "Orc"}; //Divide by 100, made orc op for testing
 
 // Enemy races
 const race VAMPIRE = {50, 25, 25, "Vampire"};
@@ -141,13 +141,13 @@ public:
 class Enemy:public Character
 {
 	race eRace;
-	Gold * hoard;
+	posn hoard;
 public:
 	Enemy();
 	void initRace(race r);
 	std::string getRace();
-	void initHoard(Gold * g);
-	void freeHoard();
+	void initHoard(posn p);
+	//void freeHoard();
 	posn hoardLoc();
 	void die();
 };
@@ -171,6 +171,8 @@ public:
 	void initRace(char c); // Initializes race from char; used when race is read in at start
 	void addGold(double value);
 	void usePotion (Potion &p);
+	void oxmanly(); //Cheats are fun!
+	void grosslyOverpowered(); //Hooray!
 	void die();
 	bool attack(Enemy * e); //Returns true if the attack kills the enemy
 	bool getAttacked(Enemy e); //Returns true if the attack kills the player

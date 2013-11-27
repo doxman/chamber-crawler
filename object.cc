@@ -13,6 +13,13 @@ bool operator==(race arg1, race arg2)
 		return true;
 	return false;
 }
+//equality test for posns
+bool operator==(posn arg1, posn arg2)
+{
+	if (arg1.row == arg2.row && arg1.col == arg2.col)
+		return true;
+	return false;
+}
 
 // Object class
 void Object::setObjectChar(char c) // protected
@@ -264,11 +271,20 @@ bool Player::getAttacked(Enemy e){
 	setMessage(m.str());
 	return (getHP() <= 0);
 }
-
+void Player::oxmanly()
+{
+	setDef(9001 * getDef());
+	setMessage(getMessage() + "PC becomes Oxmanly! ");
+}
+void Player::grosslyOverpowered()
+{
+	setAtk(144 * getAtk());
+	setMessage(getMessage() + "PC becomes Grossly Overpowered! ");
+}
 void Player::die(){}
 
 // Since dragons are generated before other enemies, default race should be dragon! (?)
-Enemy::Enemy(): Character(ENEMY), eRace(DRAGON), hoard(NULL){}
+Enemy::Enemy(): Character(ENEMY), eRace(DRAGON), hoard(nullPosn){}
 void Enemy::initRace(race r)
 {
 	if (eRace == DRAGON)
@@ -290,24 +306,18 @@ string Enemy::getRace()
 	return eRace.name;
 }
 
-void Enemy::initHoard(Gold * g)
+void Enemy::initHoard(posn p)
 {
-	hoard = g;
+	hoard = p;
 }
-void Enemy::freeHoard()
+/*void Enemy::freeHoard()
 {
+	cout << "The hoard at " << hoardLoc().row << "," << hoardLoc().col << " is now unguarded" << endl;
 	hoard->setGuarded(false);
-}
+}*/
 posn Enemy::hoardLoc()
 {
-	if (hoard != NULL)
-	{
-		return hoard->getLoc();
-	}
-	else
-	{
-		return nullPosn;
-	}
+	return hoard;
 }
 
 void Enemy::die(){}

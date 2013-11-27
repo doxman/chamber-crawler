@@ -102,7 +102,8 @@ void Floor::spawnObject(char c)
 	else if (c == GOLD)
 	{
 		golds[numGolds].initLoc(temp);
-		choice = rand() % 8;
+		d.setChar(temp.row, temp.col, c);
+		choice = rand() % 14; //Increased from 8 to make more dragons
 		if (choice < 5)
 		{
 			golds[numGolds].initValue(NORMAL);
@@ -166,10 +167,10 @@ void Floor::spawnObject(char c)
 							p.row = temp.row + 1, p.col = temp.col;
 						enemies[numEnemies].initLoc(p);
 						enemies[numEnemies].initRace(DRAGON);
-						enemies[numEnemies].initHoard(&golds[numGolds]);
+						enemies[numEnemies].initHoard(temp);
+						d.setChar(temp.row, temp.col, '$');
 						d.setChar(p.row, p.col, enemies[numEnemies].getObjectChar());
 						numEnemies++;
-						//cout << "Dragon hoard at: " << temp.row << "," << temp.col << endl;
 					}
 					if (open[i])
 						counter++;
@@ -177,7 +178,7 @@ void Floor::spawnObject(char c)
 			}
 			
 		}
-		d.setChar(temp.row, temp.col, c);
+		
 		numGolds++;
 	}
 	else if (c == ENEMY)
@@ -227,7 +228,7 @@ bool Floor::tryMove(int dir)
 		nextFloor();
 		return false;
 	}
-	if (d.getChar(row, col) == GOLD)
+	if (d.getChar(row, col) == GOLD || d.getChar(row, col) == '$')
 	{
 		int goldNum;
 		for (goldNum = 0; goldNum < numGolds; goldNum++)
@@ -236,7 +237,7 @@ bool Floor::tryMove(int dir)
 			if (loc.row == row && loc.col == col)
 				break;
 		}
-		if (!golds[goldNum].isGuarded()) // If not a dragon hoard
+		if (!golds[goldNum].isGuarded()) // If not guarded dragon hoard
 		{
 			player.addGold(golds[goldNum].getValue());
 			d.setChar(row, col, FLOOR);
@@ -247,6 +248,7 @@ bool Floor::tryMove(int dir)
 		}
 		else
 		{
+			//cout << "Guarded gold has value " << golds[goldNum].getValue() << endl;
 			player.setMessage(player.getMessage() + "Dragon scares PC away from their hoard. ");
 		}
 		// Add code for dragon hoards (value 6) later
@@ -370,7 +372,17 @@ bool Floor::playerTurn()
 				if (c == 'D')
 				{
 					d.setChar(checkRow, checkCol, FLOOR);
-					enemies[enemyNum].freeHoard();
+					posn goldLoc = enemies[enemyNum].hoardLoc();
+					for (int goldNum = 0; goldNum < numGolds; goldNum++)
+					{
+						p = golds[goldNum].getLoc();
+						if (goldLoc == p)
+						{
+							golds[goldNum].setGuarded(false);
+							break;
+						}
+					}
+
 				}
 				else if (c == 'M')
 				{
@@ -406,6 +418,14 @@ bool Floor::playerTurn()
 	else if (temp == "q") // Quit code here
 	{
 		quit = true;
+	}
+	else if (temp == "oxmanly")
+	{
+		player.oxmanly();
+	}
+	else if (temp == "grosslyoverpowered")
+	{
+		player.grosslyOverpowered();
 	}
 	else // Catch invalid strings
 	{
@@ -461,7 +481,7 @@ void Floor::moveEnemy(Enemy *e)
 			{
 				open[counter] = true;
 				if (e->getRace()!= "Dragon") {
-				availableMoves++; //Only can move if not a dragon
+					availableMoves++; //Only can move if not a dragon
 				}
 			}
 			if (d.getChar(i, j) == PLAYER)
@@ -571,7 +591,19 @@ void Floor::print()
 	cout << "Atk: " << player.getAtk() << endl;
 	cout << "Def: " << player.getDef() << endl;
 	cout << "Action: " << player.getMessage() << endl; // change this to actually display stuff!
-	
+	/*
+	for (int i = 0; i < numEnemies; i++) {
+		cout << enemies[i].getRace() << " at " << enemies[i].getLoc().row << "," << enemies[i].getLoc().col << " is guarding hoard at " << enemies[i].hoardLoc().row << "," << enemies[i].hoardLoc().col << endl;
+	}
+	for (int i = 0; i < numGolds; i++) {
+		string g = "";
+		if	(!golds[i].isGuarded())
+		{
+			g = "not ";
+		}
+		cout << "Gold at " << golds[i].getLoc().row << "," << golds[i].getLoc().col << " is " << g << "guarded." << endl;
+	}//*/
+
 	player.setMessage("");
 	// Print list of posns in each chamber
 	/* BLOCK SAVED FOR TESTING
@@ -620,7 +652,12 @@ void Floor::endGame()
 {
 	if(floorNum > 8)
 	{
-		cout << "You Win! You can either play again, or quit" << endl;
+		int score = player.getGold();
+		if (player.getRace() == "Human")
+		{
+			score += score / 2;
+		}
+		cout << "You Win! Your final score is " << score << ". You can either play again, or quit" << endl;
 	}
 	else if (player.getHP() <= 0)
 	{
