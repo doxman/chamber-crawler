@@ -148,8 +148,8 @@ void Floor::spawnObject(char c)
 						//Spawn a dragon
 						golds[numGolds].initValue(DRAGON_HOARD);
 						golds[numGolds].setGuarded(true);
-						posn p;
-						if (i == NORTH)
+						posn p = temp.dirAdjacent(i);
+						/*if (i == NORTH)
 							p.row = temp.row - 1, p.col = temp.col;
 						else if (i == NORTHWEST)
 							p.row = temp.row - 1, p.col = temp.col - 1;
@@ -164,7 +164,7 @@ void Floor::spawnObject(char c)
 						else if (i == SOUTHEAST)
 							p.row = temp.row + 1, p.col = temp.col + 1;
 						else
-							p.row = temp.row + 1, p.col = temp.col;
+							p.row = temp.row + 1, p.col = temp.col;*/
 						enemies[numEnemies].initLoc(p);
 						enemies[numEnemies].initRace(DRAGON);
 						enemies[numEnemies].initHoard(temp);
@@ -207,7 +207,10 @@ bool Floor::tryMove(int dir)
 	posn current = player.getLoc();
 	int row;
 	int col;
-	if (dir == NORTHWEST)
+	posn p = current.dirAdjacent(dir);
+	row = p.row;
+	col = p.col;
+	/*if (dir == NORTHWEST)
 		row = current.row - 1, col = current.col - 1;
 	else if (dir == NORTH)
 		row = current.row - 1, col = current.col;
@@ -222,7 +225,7 @@ bool Floor::tryMove(int dir)
 	else if (dir == SOUTH)
 		row = current.row + 1, col = current.col;
 	else // southeast
-		row = current.row + 1, col = current.col + 1;
+		row = current.row + 1, col = current.col + 1;*/
 	if (d.getChar(row, col) == STAIRS) // go to next floor immediately
 	{
 		nextFloor();
@@ -261,6 +264,65 @@ bool Floor::tryMove(int dir)
 		player.setTileChar(target);
 		d.setChar(row, col, PLAYER);
 		player.move(dir);
+		//Show potions
+		posn adj;
+		int potNum;
+		for (int i = 0; i < numDirections; i++) {
+			adj = p.dirAdjacent(i);
+			if (d.getChar(adj.row, adj.col) == POTION) {
+				stringstream m;
+				m << player.getMessage() << "There is a";
+				
+				for (potNum = 0; potNum < numPotions; potNum++)
+				{
+					posn potLoc = potions[potNum].getLoc();
+					if (potLoc == adj)
+					{
+						if (knownPotions[potions[potNum].getTypeNum()]) {
+							m << " " << potions[potNum].getType() << " potion to the ";
+							
+						}
+						else
+						{
+							m << "n unknown potion to the ";
+						}
+					}
+				}
+				if (i == NORTHWEST)
+				{
+					m << "northwest. ";
+				}
+				else if (i == NORTHEAST)
+				{
+					m << "northeast. ";
+				}
+				else if (i == NORTH)
+				{
+					m << "north. ";
+				}
+				else if (i == WEST)
+				{
+					m << "west. ";
+				}
+				else if (i == EAST)
+				{
+					m << "east. ";
+				}
+				else if (i == SOUTHWEST)
+				{
+					m << "southwest. ";
+				}
+				else if (i == SOUTHEAST)
+				{
+					m << "southeast. ";
+				}
+				else
+				{
+					m << "south. ";
+				}
+				player.setMessage(m.str());
+			}
+		}
 	}
 	else // insulting message?
 	{
@@ -322,6 +384,7 @@ bool Floor::playerTurn()
 					break;
 			}
 			player.usePotion(potions[potNum]);
+			knownPotions[potions[potNum].getTypeNum()] = true;
 			d.setChar(checkRow, checkCol, FLOOR);
 			// delete used potion from array
 			numPotions--;
@@ -529,6 +592,10 @@ Floor::Floor(char pR)
 {
 	for (int i = 0; i < numChambers; i++)
 		chambers[i].tiles = vector<posn>();
+	for (int i = 0; i < numPotionTypes; i++)
+	{
+		knownPotions[i] = false;
+	}
 	playerRace = pR;
 	floorNum = 1;
 	playerHP = 0;
@@ -590,7 +657,8 @@ void Floor::print()
 	cout << "HP: " << player.getHP() << endl;
 	cout << "Atk: " << player.getAtk() << endl;
 	cout << "Def: " << player.getDef() << endl;
-	cout << "Action: " << player.getMessage() << endl; // change this to actually display stuff!
+	cout << "Action: " << player.getMessage() << endl;
+	
 	/*
 	for (int i = 0; i < numEnemies; i++) {
 		cout << enemies[i].getRace() << " at " << enemies[i].getLoc().row << "," << enemies[i].getLoc().col << " is guarding hoard at " << enemies[i].hoardLoc().row << "," << enemies[i].hoardLoc().col << endl;

@@ -6,6 +6,8 @@ struct posn
 {
 	int row;
 	int col;
+	posn dirAdjacent(int dir);
+	int findDir(posn other);
 };
 
 struct race
@@ -105,6 +107,7 @@ public:
 	int getAtk();
 	int getDef();
 	std::string getType();
+	int getTypeNum();
 	void die();
 };
 

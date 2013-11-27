@@ -8,6 +8,7 @@ const int numChambers = 5;
 const int potionsSpawned = 10;
 const int goldsSpawned = 10;
 const int enemiesSpawned = 20;
+const int numPotionTypes = 6;
 
 // String constants for directions
 const std::string STRNWEST = "nw";
@@ -39,6 +40,7 @@ class Floor
 	bool angryMerchants;
 	bool quit;
 	bool restart;
+	bool knownPotions[numPotionTypes];
 	int playerChamber;		  // Stores which chamber the player spawned in
 	char playerRace;		  // Stores the player's race, as a character
 	int floorNum;

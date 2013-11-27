@@ -20,7 +20,70 @@ bool operator==(posn arg1, posn arg2)
 		return true;
 	return false;
 }
-
+//dir should be a directional constant
+posn posn::dirAdjacent(int dir)
+{
+	posn p;
+	if (dir == NORTH)
+		p.row = row - 1, p.col = col;
+	else if (dir == NORTHWEST)
+		p.row = row - 1, p.col = col - 1;
+	else if (dir == NORTHEAST)
+		p.row = row - 1, p.col = col + 1;
+	else if (dir == WEST)
+		p.row = row, p.col = col - 1;
+	else if (dir == EAST)
+		p.row = row, p.col = col + 1;
+	else if (dir == SOUTHWEST)
+		p.row = row + 1, p.col = col - 1;
+	else if (dir == SOUTHEAST)
+		p.row = row + 1, p.col = col + 1;
+	else
+		p.row = row + 1, p.col = col;
+	return p;
+}
+//other should not be the same location as this
+int posn::findDir(posn other)
+{
+	if (other.row > row)
+	{
+		if (other.col > col) {
+			return SOUTHEAST;
+		}
+		else if (other.col < col)
+		{
+			return SOUTHWEST;
+		}
+		else
+		{
+			return SOUTH;
+		}
+	}
+	else if (other.row < row)
+	{
+		if (other.col > col) {
+			return NORTHEAST;
+		}
+		else if (other.col < col)
+		{
+			return NORTHWEST;
+		}
+		else
+		{
+			return NORTH;
+		}
+	}
+	else
+	{
+		if (other.col > col) {
+			return EAST;
+		}
+		else
+		{
+			return WEST;
+		}
+	}
+}
 // Object class
 void Object::setObjectChar(char c) // protected
 {
@@ -69,6 +132,31 @@ int Potion::getHP() {return hpMod;}
 int Potion::getAtk() {return atkMod;}
 int Potion::getDef() {return defMod;}
 string Potion::getType() {return type;}
+int Potion::getTypeNum()
+{
+	if (type == "RH") {
+		return 0;
+	}
+	else if (type == "BA")
+	{
+		return 1;
+	}
+	else if (type == "BD")
+	{
+		return 2;
+	}
+	else if (type == "PH")
+	{
+		return 3;
+	}
+	else if (type == "WA")
+	{
+		return 4;
+	}else
+	{
+		return 5;
+	}
+}
 void Potion::die(){}
 
 Gold::Gold(): Object(GOLD), value(0), guarded(false){}
