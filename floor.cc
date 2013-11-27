@@ -103,14 +103,16 @@ void Floor::spawnObject(char c)
 	{
 		golds[numGolds].initLoc(temp);
 		d.setChar(temp.row, temp.col, c);
-		choice = rand() % 14; //Increased from 8 to make more dragons
+		choice = rand() % 8; //Increased from 8 to make more dragons
 		if (choice < 5)
 		{
 			golds[numGolds].initValue(NORMAL);
+			golds[numGolds].setGuarded(false);
 		}
 		else if (choice < 7)
 		{
 			golds[numGolds].initValue(SMALL_HOARD);
+			golds[numGolds].setGuarded(false);
 		}
 		else
 		{
@@ -136,6 +138,7 @@ void Floor::spawnObject(char c)
 			if (availableSpaces < 1) // All adjacent tiles are blocked
 			{
 				golds[numGolds].initValue(SMALL_HOARD);//No room for a dragon, make this a small hoard instead
+				golds[numGolds].setGuarded(false);
 			}
 			else
 			{
@@ -168,7 +171,7 @@ void Floor::spawnObject(char c)
 						enemies[numEnemies].initLoc(p);
 						enemies[numEnemies].initRace(DRAGON);
 						enemies[numEnemies].initHoard(temp);
-						d.setChar(temp.row, temp.col, '$');
+						d.setChar(temp.row, temp.col, GOLD);
 						d.setChar(p.row, p.col, enemies[numEnemies].getObjectChar());
 						numEnemies++;
 					}
@@ -231,7 +234,7 @@ bool Floor::tryMove(int dir)
 		nextFloor();
 		return false;
 	}
-	if (d.getChar(row, col) == GOLD || d.getChar(row, col) == '$')
+	if (d.getChar(row, col) == GOLD)
 	{
 		int goldNum;
 		for (goldNum = 0; goldNum < numGolds; goldNum++)
@@ -451,6 +454,7 @@ bool Floor::playerTurn()
 				{
 					golds[numGolds].setLoc(p);
 					golds[numGolds].initValue(MERCHANT_HOARD);
+					golds[numGolds].setGuarded(false);
 					d.setChar(checkRow, checkCol, GOLD);
 					numGolds++;
 				}
@@ -458,6 +462,7 @@ bool Floor::playerTurn()
 				{
 					golds[numGolds].setLoc(p);
 					golds[numGolds].initValue(NORMAL);
+					golds[numGolds].setGuarded(false);
 					d.setChar(checkRow, checkCol, GOLD);
 					numGolds++;
 					
