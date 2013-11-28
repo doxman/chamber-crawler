@@ -38,7 +38,7 @@ posn posn::dirAdjacent(int dir)
 		p.row = row + 1, p.col = col - 1;
 	else if (dir == SOUTHEAST)
 		p.row = row + 1, p.col = col + 1;
-	else
+	else // south
 		p.row = row + 1, p.col = col;
 	return p;
 }
@@ -288,7 +288,7 @@ void Player::initRace(char c)
 }
 void Player::addGold(double value)
 {
-	int collected;
+	double collected;
 	if (pRace == DWARF)
 		collected = 2 * value;
 	else if (pRace == ORC)
