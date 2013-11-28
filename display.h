@@ -141,6 +141,7 @@ public:
 	Display();
 	void setChar(int row, int col, char c);
 	char getChar(int row, int col);
+	void fixCharacters(); // Used to change displayed characters when reading map from file
 	friend std::istream &operator>>(std::istream &in, Display &d);
 	friend std::ostream &operator<<(std::ostream &out, const Display &d);
 };
