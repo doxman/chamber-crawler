@@ -17,6 +17,22 @@ char Display::getChar(int row, int col)
 {
 	return display[row][col];
 }
+void Display::fixCharacters()
+{
+	for (int i = 0; i < HEIGHT; i++)
+	{
+		for (int j = 0; j < WIDTH; j++)
+		{
+			if (display[i][j] >= '0' && display[i][j] <= '5')
+				display[i][j] = 'P';
+			else if (display[i][j] >= '6' && display[i][j] <= '9')
+				display[i][j] = 'G';
+			else if (display[i][j] == 'E')
+				display[i][j] = 'D'; // 'E' is a temporary assignment for satisfied Dragons
+									 // it is possible because nothing in the game uses 'E'
+		}
+	}
+}
 istream& operator>>(istream &in, Display &d)
 {
 	string temp;
