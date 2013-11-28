@@ -1,5 +1,4 @@
 #include "floor.h"
-#include <fstream>
 #include <cstdlib>
 #include <sstream>
 using namespace std;
@@ -198,7 +197,7 @@ void Floor::spawnObject(char c)
 			enemies[numEnemies].initRace(TROLL);
 		else if (choice < 16) // phoenix 1/9
 			enemies[numEnemies].initRace(PHOENIX);
-		else 				  // merchant 1/9
+		else                                   // merchant 1/9
 			enemies[numEnemies].initRace(MERCHANT);
 		d.setChar(temp.row, temp.col, enemies[numEnemies].getObjectChar());
 		numEnemies++;
@@ -593,15 +592,18 @@ void Floor::moveEnemy(Enemy *e)
 }
 
 // PUBLIC METHODS
-Floor::Floor(char pR)
+Floor::Floor(char pR, char *fN)
 {
+	playerRace = pR;
+	fileName = fN;
+	if (fN[0] != '/') // If name is not null, initialize filestream
+		fileIn = new ifstream(fN);
 	for (int i = 0; i < numChambers; i++)
 		chambers[i].tiles = vector<posn>();
 	for (int i = 0; i < numPotionTypes; i++)
 	{
 		knownPotions[i] = false;
 	}
-	playerRace = pR;
 	floorNum = 1;
 	playerHP = 0;
 	playerGold = 0;
@@ -612,30 +614,247 @@ Floor::Floor(char pR)
 }
 Floor::~Floor()
 {
+	delete fileIn;
 }
 void Floor::init()
 {
 	d = Display();
-	playerChamber = -1;
-	numPotions = 0;
-	numGolds = 0;
-	numEnemies = 0;
-	char temp [HEIGHT] [WIDTH];
-	for (int i = 0; i < HEIGHT; i++)
+	if (fileName[0] == '/') // If not reading from file
 	{
-		for (int j = 0; j < WIDTH; j++)
-			temp[i][j] = d.getChar(i, j);
+		playerChamber = -1;
+		numPotions = 0;
+		numGolds = 0;
+		numEnemies = 0;
+		char temp [HEIGHT] [WIDTH];
+		for (int i = 0; i < HEIGHT; i++)
+		{
+			for (int j = 0; j < WIDTH; j++)
+				temp[i][j] = d.getChar(i, j);
+		}
+		floodGrid(temp);
+		unfloodGrid(temp);
+		spawnObject(PLAYER);
+		spawnObject(STAIRS);
+		while(numPotions < potionsSpawned)
+			spawnObject(POTION);
+		while(numGolds < goldsSpawned)
+			spawnObject(GOLD);
+		while(numEnemies < enemiesSpawned)
+			spawnObject(ENEMY);
 	}
-	floodGrid(temp);
-	unfloodGrid(temp);
-	spawnObject(PLAYER);
-	spawnObject(STAIRS);
-	while(numPotions < potionsSpawned)
-		spawnObject(POTION);
-	while(numGolds < goldsSpawned)
-		spawnObject(GOLD);
-	while(numEnemies < enemiesSpawned)
-		spawnObject(ENEMY);
+	else
+	{
+		*fileIn >> d;
+		numPotions = 0;
+		numGolds = 0;
+		numEnemies = 0;
+		char temp;
+		posn p;
+		for (int i = 0; i < HEIGHT; i++)
+		{
+			for (int j = 0; j < WIDTH; j++)
+			{
+				temp = d.getChar(i, j);
+				p.row = i, p.col = j;
+				if (temp == '@') // Player
+				{
+					player.initLoc(p);
+					player.initRace(playerRace);
+					player.initGold(playerGold);
+					if (playerHP != 0)
+						player.initHP(playerHP);
+				}
+				else if (temp == '\\') // Stairs
+				{
+					stairs.initLoc(p);
+				}
+				else if (temp >= '0' && temp <= '5') // Potions
+				{
+					potions[numPotions].initLoc(p);
+					if (temp == '0')
+						potions[numPotions].initPotion(RH);
+					else if (temp == '1')
+						potions[numPotions].initPotion(BA);
+					else if (temp == '2')
+						potions[numPotions].initPotion(BD);
+					else if (temp == '3')
+						potions[numPotions].initPotion(PH);
+					else if (temp == '4')
+						potions[numPotions].initPotion(WA);
+					else
+						potions[numPotions].initPotion(WD);
+					numPotions++;
+				}
+				else if (temp >= '6' && temp <= '9') // Gold
+				{
+					golds[numGolds].initLoc(p);
+					golds[numGolds].setGuarded(false);
+					if (temp == '6') // normal gold
+						golds[numGolds].initValue(NORMAL);
+					else if (temp == '7') // small hoard
+						golds[numGolds].initValue(SMALL_HOARD);
+					else if (temp == '8') // merchant hoard
+						golds[numGolds].initValue(MERCHANT_HOARD);
+					else // dragon hoard
+					{
+						golds[numGolds].initValue(DRAGON_HOARD);
+						golds[numGolds].setGuarded(true);
+						// We'll figure out which dragon is guarding it later in the method
+					}
+					numGolds++;
+				}
+				else if (temp >= 'A' && temp <= 'Z' && temp != 'D') // Any non-dragon Enemy
+				{													// (any letter but 'D'
+					enemies[numEnemies].initLoc(p);
+					if (temp == 'W')      // werewolf 2/9
+						enemies[numEnemies].initRace(WEREWOLF);
+					else if (temp == 'V') // vampire 3/18
+						enemies[numEnemies].initRace(VAMPIRE);
+					else if (temp == 'N') // goblin 5/18
+						enemies[numEnemies].initRace(GOBLIN);
+					else if (temp == 'T') // troll 1/9
+						enemies[numEnemies].initRace(TROLL);
+					else if (temp == 'X') // phoenix 1/9
+						enemies[numEnemies].initRace(PHOENIX);
+					else                  // merchant 1/9
+						enemies[numEnemies].initRace(MERCHANT);
+					numEnemies++;
+				}
+			}
+		}
+		// At this point, all objects but dragons have been accounted for
+		// Need to add dragons and associate them with hoards
+		posn q; // Temporarily stores locations adjacent to p
+		posn r; // Temporarily stores locations adjacent to q
+		int numAdj;
+		bool possible[numDirections];
+		int threshold = 1; // Largest number of adjacent hoards per dragon that we look at
+		int choice;
+		int counter;
+		bool dragonSpawned; // Used to break out of the loop whenever a new dragon is spawned
+		int leastNeighbours;
+		int numNeighbours;
+		int matchingHoards; // Counts hoards that tie for least number of neighbours
+		
+		// Threshold is incremented whenever we don't find a dragon with than many neighbours
+		// And decremented whenever we find and spawn such a dragon
+		// (because finding a dragon changes the board and can affect other dragons' claims)
+		// In this way, dragons with fewer available hoards are satisfied first.
+		
+		while (numEnemies < enemiesSpawned) // Loop while there are still unspawned dragons
+		{
+			dragonSpawned = false;
+			for (int i = 0; i < HEIGHT; i++)
+			{
+				for (int j = 0; j < WIDTH; j++)
+				{
+					if (d.getChar(i, j) == 'D') // If we find a dragon
+					{
+						p.row = i, p.col = j;
+						// Need to make sure it fits the threshold
+						// Nothing LESS than threshold should exist!
+						// Nothing MORE than threshold should be considered!
+						numAdj = 0;
+						for (int k = 0; k < numDirections; k++)
+							possible[k] = false;
+						for (int k = 0; k < numDirections; k++)
+						{
+							q = p.dirAdjacent(k); // Stores adjacent location
+							if (d.getChar(q.row, q.col) == '9') // If location is a hoard
+							{									// and is UNCLAIMED
+								possible[k] = true;
+								numAdj++;
+							}
+						}
+						if (numAdj != threshold)
+							continue; // If dragon doesn't match threshold, skip it for now
+						// Now that we've made sure the dragon matches the threshold,
+						// randomly pick an adjacent hoard from the hoards that have the LEAST
+						// number of neighbours!
+						leastNeighbours = 1;
+						while (true) // Until it finds a hoard with that many neighbours
+						{
+							matchingHoards = 0;
+							for (int k = 0; k < numDirections; k++)
+							{
+								if (!possible[k])
+									continue;	// Skip anything but unclaimed hoards
+								q = p.dirAdjacent(k);
+								numNeighbours = 0;
+								for (int l = 0; l < numDirections; l++)
+								{
+									r = q.dirAdjacent(l);
+									if (d.getChar(r.row, r.col) == 'D')
+										numNeighbours++;
+								}
+								if (numNeighbours == leastNeighbours)
+								{
+									matchingHoards++;
+								}
+							}
+							if (matchingHoards > 0)
+								break;
+							leastNeighbours++;
+						}
+						// Now that we've determined leastNeighbours and matchingHoards,
+						// determine which exact hoards have this number of neighbours
+						for (int k = 0; k < numDirections; k++)
+						{
+							if (!possible[k])
+								continue;	// Skip anything but unclaimed hoards
+							q = p.dirAdjacent(k);
+							numNeighbours = 0;
+							for (int l = 0; l < numDirections; l++)
+							{
+								r = q.dirAdjacent(l);
+								if (d.getChar(r.row, r.col) == 'D')
+									numNeighbours++;
+							}
+							if (numNeighbours != leastNeighbours)
+							{
+								possible[k] = false; // Eliminates hoards that have more
+													 // than a minimum number of competing
+													 // dragons
+							}
+						}
+						
+						// We are guaranteed that 0 < matchingHoards <= numAdj
+						choice = rand() % matchingHoards;
+						counter = 0;
+						for (int k = 0; k < numDirections; k++)
+						{
+							if (possible[k] && counter == choice)
+							{									// Actually create the dragon
+								q = p.dirAdjacent(k);
+								enemies[numEnemies].initLoc(p);
+								enemies[numEnemies].initRace(DRAGON);
+								enemies[numEnemies].initHoard(q);
+								d.setChar(q.row, q.col, 'G'); // Chosen hoard is now CLAIMED
+								d.setChar(p.row, p.col, 'E'); // Dragon is now SATISFIED
+								// (This second line hides a dragon from double assignment)
+								numEnemies++;
+								if (threshold > 1)
+									threshold--; // ALWAYS decrement in case this dragon's claim
+												 // reduced number of options for other dragons
+												 // However, threshold > 0 is always true
+								dragonSpawned = true;
+								cout << "Dragon spawned at: " << p.row << ", " << p.col << endl;
+								break;
+							}
+							if (possible[k])
+								counter++;
+						}
+						break;
+					}
+				}
+				if (dragonSpawned)
+					break;
+			}
+			if (!dragonSpawned) // If no dragons were spawned, threshold was too low
+				threshold++;
+		}
+		d.fixCharacters();
+	}
 	sortEnemies();
 }
 void Floor::round()
@@ -670,7 +889,7 @@ void Floor::print()
 	}
 	for (int i = 0; i < numGolds; i++) {
 		string g = "";
-		if	(!golds[i].isGuarded())
+		if        (!golds[i].isGuarded())
 		{
 			g = "not ";
 		}
@@ -700,26 +919,31 @@ void Floor::print()
 }
 void Floor::nextFloor()
 {
+	// stores player HP and gold for later
 	playerHP = player.getHP();
 	playerGold = player.getGold();
+	// resets all objects before spawn
 	player = Player();
 	stairs = Stairs();
 	int i;
-	// resets objects before spawn
 	for (i = 0; i < potionsSpawned; i++)
 		potions[i] = Potion();
-	for (i = 0; i < goldsSpawned; i++)
+	for (i = 0; i < goldsSpawned + enemiesSpawned; i++)
 		golds[i] = Gold();
 	for (i = 0; i < enemiesSpawned; i++)
 		enemies[i] = Enemy();
 	floorNum++;
-	// Empty chambers
-	for (i = 0; i < numChambers; i++)
+	// Empty chambers ONLY IF CHAMBERS WERE USED (ie. when not reading from file)
+	if (fileName[0] == '/')
 	{
-		while (chambers[i].tiles.size() > 0)
-			chambers[i].tiles.pop_back();
+		for (i = 0; i < numChambers; i++)
+		{
+			while (chambers[i].tiles.size() > 0)
+				chambers[i].tiles.pop_back();
+		}
 	}
-	init();
+	if (floorNum <= 8)
+		init();
 }
 void Floor::endGame()
 {
