@@ -3,6 +3,7 @@
 #include "display.h"
 #include "object.h"
 #include <vector>
+#include <fstream>
 
 const int numChambers = 5;
 const int potionsSpawned = 10;
@@ -41,11 +42,14 @@ class Floor
 	bool quit;
 	bool restart;
 	bool knownPotions[numPotionTypes];
-	int playerChamber;		  // Stores which chamber the player spawned in
-	char playerRace;		  // Stores the player's race, as a character
+	int playerChamber;                  // Stores which chamber the player spawned in
+	char playerRace;                  // Stores the player's race, as a character
 	int floorNum;
-	int playerHP; 			  // Holds player HP when transitioning between floors
-	double playerGold;		  // Holds player gold when transitioning between floors
+	int playerHP;                           // Holds player HP when transitioning between floors
+	double playerGold;                  // Holds player gold when transitioning between floors
+	char *fileName;	// Used to store name of the file that floors are being read from
+					// Set to " " if floor is not set to read from a file
+	std::ifstream *fileIn;	// Points to file stream, provided a file is given
 	void flood(char floodChar, char grid[][WIDTH], int r, int c, int chamberNum);
 	void floodGrid(char grid[][WIDTH]);
 	void unfloodGrid(char grid[][WIDTH]);
@@ -55,7 +59,7 @@ class Floor
 	void sortEnemies();
 	void moveEnemy(Enemy *e);
 public:
-	Floor(char pR);
+	Floor(char pR, char *fN);
 	~Floor();
 	void print();
 	void init();
