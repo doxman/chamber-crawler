@@ -1,9 +1,13 @@
 #include "floor.h"
 using namespace std;
 
-int main ()
+int main (int argc, char *argv[])
 {
 	char temp = ' ';
+	string tempstr = "/"; // This character can't appear in actual filenames
+	char *fileName = const_cast<char*>(tempstr.c_str());// Improve this if possible; inefficient!
+	if (argc > 1) // May want to change this later for random seed support
+		fileName = argv[1];	
 	Floor *f;
 	while (true) {
 		while (temp != 'h' && temp != 'd' && temp != 'e' && temp != 'o' && temp != 'q')
@@ -16,7 +20,7 @@ int main ()
 		}
 		if (temp == 'q') // Exit option
 			return 0;
-		f = new Floor(temp);
+		f = new Floor(temp, fileName);
 		f->init();
 		f->print();
 		while (f->getFloorNum() <= 8 && !f->shouldQuit() && !f->shouldRestart())
@@ -28,5 +32,4 @@ int main ()
 		delete f;
 		temp = ' ';
 	}
-	
 }
