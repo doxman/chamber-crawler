@@ -328,6 +328,9 @@ bool Floor::tryMove(int dir)
 	}
 	else // insulting message?
 	{
+		int randNum = rand() % 3;
+		if (target != GOLD)
+			player.setMessage(player.getMessage() + blockedMove[randNum]);
 	}
 	return true;
 }
@@ -376,6 +379,8 @@ bool Floor::playerTurn()
 			checkRow = pRow + 1, checkCol = pCol;
 		else if (temp == STRSEAST)
 			checkRow = pRow + 1, checkCol = pCol + 1;
+		else
+			checkRow = pRow, checkCol = pCol;
 		if (d.getChar(checkRow, checkCol) == 'P')
 		{
 			int potNum;
@@ -395,6 +400,8 @@ bool Floor::playerTurn()
 		}
 		else // Insulting message?
 		{
+			int randNum = rand() % 3;
+			player.setMessage(player.getMessage() + noPotion[randNum]);
 		}
 	}
 	else if (temp == "a") // Attack code here
@@ -418,6 +425,8 @@ bool Floor::playerTurn()
 			checkRow = pRow + 1, checkCol = pCol;
 		else if (temp == STRSEAST)
 			checkRow = pRow + 1, checkCol = pCol + 1;
+		else
+			checkRow = pRow, checkCol = pCol;
 		char c = d.getChar(checkRow, checkCol);
 		if (c == 'V' || c == 'W' || c == 'T' || c == 'N' || c == 'X' || c == 'M' || c == 'D')
 		{
@@ -475,6 +484,8 @@ bool Floor::playerTurn()
 		}
 		else // Insulting message?
 		{
+			int randNum = rand() % 3;
+			player.setMessage(player.getMessage() + noEnemy[randNum]);
 		}
 		
 	}
@@ -860,8 +871,11 @@ void Floor::init()
 void Floor::round()
 {
 	bool turn = playerTurn();
-	if (turn) // If player did not go up a floor, move the enemies
+	if(player.getRace() == "Ninja")
+		print();
+	if (turn && (player.getRace() != "Ninja" || playerTurn())) // If player did not go up a floor, move the enemies
 	{
+		
 		sortEnemies();
 		for (int i = 0; i < numEnemies; i++)
 			moveEnemy(&enemies[i]);

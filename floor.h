@@ -20,7 +20,9 @@ const std::string STREAST = "ea";
 const std::string STRSWEST = "sw";
 const std::string STRSOUTH = "so";
 const std::string STRSEAST = "se";
-
+const std::string blockedMove[3] = {"PC walks face first into an obstacle. ", "PC attempts to become incorporeal and pass through an occupied space, and fails. ", "PC forgets that noclip is off. "};
+const std::string noPotion[3] = {"PC embarrasingly attempts to drink the ground. ", "PC licks the floor, and immediately regrets everything. ", "PC realizes that they are really thirsty. "};
+const std::string noEnemy[3] = {"PC swings wildly at thin air, and generally makes a fool of themself. ", "PC slays all the monsters in that space. There weren't any. ", "PC shows off their fighting prowess. No one is impressed. "};
 struct Chamber
 {
 	std::vector<posn> tiles;

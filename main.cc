@@ -1,6 +1,6 @@
 #include "floor.h"
 using namespace std;
-
+bool shinyDLC;
 int main (int argc, char *argv[])
 {
 	char temp = ' ';
@@ -9,8 +9,16 @@ int main (int argc, char *argv[])
 	if (argc > 1) // May want to change this later for random seed support
 		fileName = argv[1];	
 	Floor *f;
+	while (temp != 'n' && temp != 'y')
+	{
+		cout << "Do you want shiny DLC? y/n" << endl;
+		cout << "Enter your choice: ";
+		cin >> temp;
+	}
+	shinyDLC = (temp == 'y');
+	temp = ' ';
 	while (true) {
-		while (temp != 'h' && temp != 'd' && temp != 'e' && temp != 'o' && temp != 'q')
+		while (temp != 'h' && temp != 'd' && temp != 'e' && temp != 'o' && temp != 'q' && (temp != 'n' || !shinyDLC))
 		{
 			cout << "Please choose one of the following races" << endl;
 			cout << "Human (h), dwarf (d), elf (e), orc (o)" << endl;

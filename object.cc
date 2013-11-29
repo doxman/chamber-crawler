@@ -281,6 +281,9 @@ void Player::initRace(char c)
 		pRace = ELF;
 	else if (c == 'o')
 		pRace = ORC;
+	else if (c == 'n')
+		pRace = NINJA;
+		
 	// Sets current stats to match race
 	setHP(pRace.hp);
 	setAtk(pRace.atk);

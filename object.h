@@ -28,7 +28,8 @@ const char FLOOR = '.';
 const race HUMAN = {140, 20, 20, "Human"};
 const race DWARF = {100, 20, 30, "Dwarf"};
 const race ELF = {140, 30, 10, "Elf"};
-const race ORC = {180, 30, 25, "Orc"}; //Divide by 100, made orc op for testing
+const race ORC = {180, 30, 25, "Orc"};
+const race NINJA = {50, 50, 10, "Ninja"};
 
 // Enemy races
 const race VAMPIRE = {50, 25, 25, "Vampire"};
