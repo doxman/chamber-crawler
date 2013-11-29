@@ -70,6 +70,7 @@ void Floor::spawnObject(char c)
 		player.initLoc(temp);
 		player.initRace(playerRace);
 		player.initGold(playerGold);
+		player.initDLC(shinyDLC); 
 		if (playerHP != 0)
 			player.initHP(playerHP);
 		d.setChar(temp.row, temp.col, c);
@@ -549,6 +550,11 @@ void Floor::moveEnemy(Enemy *e)
 		open[i] = false;
 	int availableMoves = 0;
 	int counter = 0; // Goes through the 8 directions controlled by the array
+	if (shinyDLC && e->getRace() == "Troll")
+	{
+		//Troll regen
+		e->setHP(min(e->getHP() + 5, 120));
+	}
 	for (int i = loc.row - 1; i <= loc.row + 1; i++)
 	{
 		for (int j = loc.col - 1; j <= loc.col + 1; j++)
@@ -577,7 +583,7 @@ void Floor::moveEnemy(Enemy *e)
 	{
 		//TBD: Check if a dragon would actually attack
 		if (availableMoves < 0) {
-			bool lethal = player.getAttacked(*e);
+			bool lethal = player.getAttacked(e);
 			if(lethal)
 			{
 				restart = true;
@@ -749,6 +755,7 @@ void Floor::init()
 					player.initLoc(p);
 					player.initRace(playerRace);
 					player.initGold(playerGold);
+					player.initDLC(shinyDLC);
 					if (playerHP != 0)
 						player.initHP(playerHP);
 				}

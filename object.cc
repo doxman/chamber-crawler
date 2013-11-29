@@ -250,6 +250,7 @@ int Character::getDef()
 Player::Player(): Character(PLAYER), tileChar(FLOOR), pRace(HUMAN)
 {
 	gold = 0;
+	shinyDLC = false;
 	message = "";
 	setHP(HUMAN.hp);
 	setAtk(HUMAN.atk);
@@ -306,6 +307,9 @@ void Player::initRace(char c)
 	setHP(pRace.hp);
 	setAtk(pRace.atk);
 	setDef(pRace.def);
+}
+void Player::initDLC(bool dlc){
+	shinyDLC = dlc;
 }
 void Player::addGold(double value)
 {
@@ -365,17 +369,23 @@ bool Player::attack(Enemy * e){
 	return lethal;
 	
 }
-bool Player::getAttacked(Enemy e){
+bool Player::getAttacked(Enemy * e){
 	int hit = rand() % 2;
 	stringstream m;
 	if (hit == 1) {
-		double damage = ceil((100.0/(100.0 + (double)getDef()))*((double)e.getAtk()));
+		int damage = ceil((100.0/(100.0 + (double)getDef()))*((double)e->getAtk()));
 		setHP((getHP()-damage));
-		m << getMessage() << e.getRace() << " deals " << damage << " damage to PC. ";
+		m << getMessage() << e->getRace() << " deals " << damage << " damage to PC. ";
+		if (shinyDLC && e->getRace() == "Vampire")
+		{
+			int heal = min(damage / 5, (50 - e->getHP()));
+			e->setHP(e->getHP() + heal);
+			m << "Vampire heals " << heal << " HP, and now has " << e->getHP() << " health. ";
+		}
 	}
 	else
 	{
-		m << getMessage() << e.getRace() << " attacks and misses PC. ";
+		m << getMessage() << e->getRace() << " attacks and misses PC. ";
 	}
 	setMessage(m.str());
 	return (getHP() <= 0);

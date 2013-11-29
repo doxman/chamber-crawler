@@ -162,6 +162,7 @@ class Player:public Character
 	race pRace;
 	double gold;
 	std::string message;
+	bool shinyDLC;
 public:
 	Player(); // Makes a default human player; placeholder
 	char getTileChar();
@@ -173,13 +174,14 @@ public:
 	void initGold(double g); // Only works when gold is at 0; sets last floor's value
 	void initHP(int hp);   // Only works when hp is at race total; sets last floor's value
 	void initRace(char c); // Initializes race from char; used when race is read in at start
+	void initDLC(bool dlc);
 	void addGold(double value);
 	void usePotion (Potion &p);
 	void oxmanly(); //Cheats are fun!
 	void grosslyOverpowered(); //Hooray!
 	void die();
 	bool attack(Enemy * e); //Returns true if the attack kills the enemy
-	bool getAttacked(Enemy e); //Returns true if the attack kills the player
+	bool getAttacked(Enemy * e); //Returns true if the attack kills the player
 };
 
 #endif
