@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
 		}
 		if (temp == 'q') // Exit option
 			return 0;
-		f = new Floor(temp, fileName);
+		f = new Floor(temp, fileName, shinyDLC);
 		f->init();
 		f->print();
 		while (f->getFloorNum() <= 8 && !f->shouldQuit() && !f->shouldRestart())

@@ -40,6 +40,7 @@ class Floor
 	int numPotions;
 	int numGolds;
 	int numEnemies;
+	bool shinyDLC;
 	bool angryMerchants;
 	bool quit;
 	bool restart;
@@ -61,7 +62,9 @@ class Floor
 	void sortEnemies();
 	void moveEnemy(Enemy *e);
 public:
-	Floor(char pR, char *fN);
+	Floor(char pR, char *fN, bool dlc);
+	int clockwise(int dir);
+	int cClockwise(int dir);
 	~Floor();
 	void print();
 	void init();

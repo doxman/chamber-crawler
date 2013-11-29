@@ -20,6 +20,7 @@ struct race
 
 bool operator==(race arg1, race arg2);
 bool operator==(posn arg1, posn arg2);
+
 const posn nullPosn = {-1, -1};
 
 const char FLOOR = '.';
@@ -65,7 +66,6 @@ const int EAST = 4;
 const int SOUTHWEST = 5;
 const int SOUTH = 6;
 const int SOUTHEAST = 7;
-
 // Object characters
 const char PLAYER = '@';
 const char STAIRS = '\\';

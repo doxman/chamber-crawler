@@ -20,7 +20,9 @@ bool operator==(posn arg1, posn arg2)
 		return true;
 	return false;
 }
+
 //dir should be a directional constant
+
 posn posn::dirAdjacent(int dir)
 {
 	posn p;
@@ -45,7 +47,7 @@ posn posn::dirAdjacent(int dir)
 //other should not be the same location as this
 int posn::findDir(posn other)
 {
-	if (other.row > row)
+	/*(if (other.row > row)
 	{
 		if (other.col > col) {
 			return SOUTHEAST;
@@ -82,7 +84,23 @@ int posn::findDir(posn other)
 		{
 			return WEST;
 		}
-	}
+	}//*/
+	if (other.col > col && other.row > row)
+		return SOUTHEAST;
+	else if (other.col > col && other.row == row)
+		return EAST;
+	else if (other.col > col && other.row < row)
+		return NORTHEAST;
+	else if (other.col == col && other.row > row)
+		return SOUTH;
+	else if (other.col == col && other.row < row)
+		return NORTH;
+	else if (other.col < col && other.row > row)
+		return SOUTHWEST;
+	else if (other.col < col && other.row == row)
+		return WEST;
+	else
+		return NORTHWEST;
 }
 // Object class
 void Object::setObjectChar(char c) // protected
@@ -196,8 +214,8 @@ Character::Character(char oC): Object(oC) {}
 void Character::move(int dir)
 {
 	posn current = getLoc();
-	posn p;
-	if (dir == NORTH)
+	//posn p;
+	/*if (dir == NORTH)
 		p.row = current.row - 1, p.col = current.col;
 	else if (dir == NORTHWEST)
 		p.row = current.row - 1, p.col = current.col - 1;
@@ -212,8 +230,8 @@ void Character::move(int dir)
 	else if (dir == SOUTHEAST)
 		p.row = current.row + 1, p.col = current.col + 1;
 	else
-		p.row = current.row + 1, p.col = current.col;
-	setLoc(p);
+		p.row = current.row + 1, p.col = current.col;*/
+	setLoc(current.dirAdjacent(dir));
 }
 int Character::getHP()
 {

@@ -152,21 +152,21 @@ void Floor::spawnObject(char c)
 						golds[numGolds].setGuarded(true);
 						posn p = temp.dirAdjacent(i);
 						/*if (i == NORTH)
-							p.row = temp.row - 1, p.col = temp.col;
-						else if (i == NORTHWEST)
-							p.row = temp.row - 1, p.col = temp.col - 1;
-						else if (i == NORTHEAST)
-							p.row = temp.row - 1, p.col = temp.col + 1;
-						else if (i == WEST)
-							p.row = temp.row, p.col = temp.col - 1;
-						else if (i == EAST)
-							p.row = temp.row, p.col = temp.col + 1;
-						else if (i == SOUTHWEST)
-							p.row = temp.row + 1, p.col = temp.col - 1;
-						else if (i == SOUTHEAST)
-							p.row = temp.row + 1, p.col = temp.col + 1;
-						else
-							p.row = temp.row + 1, p.col = temp.col;*/
+						 p.row = temp.row - 1, p.col = temp.col;
+						 else if (i == NORTHWEST)
+						 p.row = temp.row - 1, p.col = temp.col - 1;
+						 else if (i == NORTHEAST)
+						 p.row = temp.row - 1, p.col = temp.col + 1;
+						 else if (i == WEST)
+						 p.row = temp.row, p.col = temp.col - 1;
+						 else if (i == EAST)
+						 p.row = temp.row, p.col = temp.col + 1;
+						 else if (i == SOUTHWEST)
+						 p.row = temp.row + 1, p.col = temp.col - 1;
+						 else if (i == SOUTHEAST)
+						 p.row = temp.row + 1, p.col = temp.col + 1;
+						 else
+						 p.row = temp.row + 1, p.col = temp.col;*/
 						enemies[numEnemies].initLoc(p);
 						enemies[numEnemies].initRace(DRAGON);
 						enemies[numEnemies].initHoard(temp);
@@ -213,21 +213,21 @@ bool Floor::tryMove(int dir)
 	row = p.row;
 	col = p.col;
 	/*if (dir == NORTHWEST)
-		row = current.row - 1, col = current.col - 1;
-	else if (dir == NORTH)
-		row = current.row - 1, col = current.col;
-	else if (dir == NORTHEAST)
-		row = current.row - 1, col = current.col + 1;
-	else if (dir == WEST)
-		row = current.row, col = current.col - 1;
-	else if (dir == EAST)
-		row = current.row, col = current.col + 1;
-	else if (dir == SOUTHWEST)
-		row = current.row + 1, col = current.col - 1;
-	else if (dir == SOUTH)
-		row = current.row + 1, col = current.col;
-	else // southeast
-		row = current.row + 1, col = current.col + 1;*/
+	 row = current.row - 1, col = current.col - 1;
+	 else if (dir == NORTH)
+	 row = current.row - 1, col = current.col;
+	 else if (dir == NORTHEAST)
+	 row = current.row - 1, col = current.col + 1;
+	 else if (dir == WEST)
+	 row = current.row, col = current.col - 1;
+	 else if (dir == EAST)
+	 row = current.row, col = current.col + 1;
+	 else if (dir == SOUTHWEST)
+	 row = current.row + 1, col = current.col - 1;
+	 else if (dir == SOUTH)
+	 row = current.row + 1, col = current.col;
+	 else // southeast
+	 row = current.row + 1, col = current.col + 1;*/
 	if (d.getChar(row, col) == STAIRS) // go to next floor immediately
 	{
 		nextFloor();
@@ -456,7 +456,7 @@ bool Floor::playerTurn()
 							break;
 						}
 					}
-
+					
 				}
 				else if (c == 'M')
 				{
@@ -585,26 +585,64 @@ void Floor::moveEnemy(Enemy *e)
 		}
 		return;
 	}
-	d.setChar(loc.row, loc.col, FLOOR); // Clears the tile the enemy is leaving
-	int move = rand() % availableMoves;
-	counter = 0;
-	for (int i = NORTHWEST; i < numDirections; i++)
+	if (shinyDLC && (e->getRace() == "Werewolf" || e->getRace() == "Vampire"))
 	{
-		if (open[i] && counter == move)
+		//These enemies will attempt to chase the player
+		int dir = e->getLoc().findDir(player.getLoc());
+		if (open[dir])
 		{
-			e->move(i);
-			break;
+			e->move(dir);
+			//cout << "An enemy moves right at PC" << endl;
 		}
-		if (open[i])
-			counter++;
+		else if (open[clockwise(dir)])
+		{
+			e->move(clockwise(dir));
+			//cout << "An enemy goes clockwise" << endl;
+		}
+		else if (open[cClockwise(dir)])
+		{
+			e->move(cClockwise(dir));
+			//cout << "An enemy goes counter clockwise" << endl;
+		}
+		else if (open[clockwise(clockwise(dir))])
+		{
+			e->move(clockwise(clockwise(dir)));
+		}
+		else if (open[cClockwise(cClockwise(dir))])
+		{
+			e->move(cClockwise(cClockwise(dir)));
+		}
+		else
+		{
+			//cout << "An enemy waits" << endl;
+			return;
+		}
+			
 	}
+	else
+	{
+		int move = rand() % availableMoves;
+		counter = 0;
+		for (int i = NORTHWEST; i < numDirections; i++)
+		{
+			if (open[i] && counter == move)
+			{
+				e->move(i);
+				break;
+			}
+			if (open[i])
+				counter++;
+		}
+	}
+	d.setChar(loc.row, loc.col, FLOOR); // Clears the tile the enemy is leaving
 	loc = e->getLoc(); // New position
 	d.setChar(loc.row, loc.col, e->getObjectChar()); // Draws the enemy's new position
 }
 
 // PUBLIC METHODS
-Floor::Floor(char pR, char *fN)
+Floor::Floor(char pR, char *fN, bool dlc)
 {
+	shinyDLC = dlc;
 	playerRace = pR;
 	fileName = fN;
 	if (fN[0] != '/') // If name is not null, initialize filestream
@@ -626,6 +664,45 @@ Floor::Floor(char pR, char *fN)
 Floor::~Floor()
 {
 	delete fileIn;
+}
+int Floor::clockwise(int dir)
+{
+	if (dir == NORTHWEST)
+		return NORTH;
+	else if (dir == NORTH)
+		return NORTHEAST;
+	else if (dir == NORTHEAST)
+		return EAST;
+	else if (dir == EAST)
+		return SOUTHEAST;
+	else if (dir == SOUTHEAST)
+		return SOUTH;
+	else if (dir == SOUTH)
+		return SOUTHWEST;
+	else if (dir == SOUTHWEST)
+		return WEST;
+	else
+		return NORTHWEST;
+	
+}
+int Floor::cClockwise(int dir)
+{
+	if (dir == NORTHWEST)
+		return WEST;
+	else if (dir == WEST)
+		return SOUTHWEST;
+	else if (dir == SOUTHWEST)
+		return SOUTH;
+	else if (dir == SOUTH)
+		return SOUTHEAST;
+	else if (dir == SOUTHEAST)
+		return EAST;
+	else if (dir == EAST)
+		return NORTHEAST;
+	else if (dir == NORTHEAST)
+		return NORTH;
+	else
+		return NORTHWEST;
 }
 void Floor::init()
 {
@@ -824,8 +901,8 @@ void Floor::init()
 							if (numNeighbours != leastNeighbours)
 							{
 								possible[k] = false; // Eliminates hoards that have more
-													 // than a minimum number of competing
-													 // dragons
+								// than a minimum number of competing
+								// dragons
 							}
 						}
 						
@@ -846,8 +923,8 @@ void Floor::init()
 								numEnemies++;
 								if (threshold > 1)
 									threshold--; // ALWAYS decrement in case this dragon's claim
-												 // reduced number of options for other dragons
-												 // However, threshold > 0 is always true
+								// reduced number of options for other dragons
+								// However, threshold > 0 is always true
 								dragonSpawned = true;
 								cout << "Dragon spawned at: " << p.row << ", " << p.col << endl;
 								break;
@@ -898,18 +975,18 @@ void Floor::print()
 	cout << "Action: " << player.getMessage() << endl;
 	
 	/*
-	for (int i = 0; i < numEnemies; i++) {
-		cout << enemies[i].getRace() << " at " << enemies[i].getLoc().row << "," << enemies[i].getLoc().col << " is guarding hoard at " << enemies[i].hoardLoc().row << "," << enemies[i].hoardLoc().col << endl;
-	}
-	for (int i = 0; i < numGolds; i++) {
-		string g = "";
-		if        (!golds[i].isGuarded())
-		{
-			g = "not ";
-		}
-		cout << "Gold at " << golds[i].getLoc().row << "," << golds[i].getLoc().col << " is " << g << "guarded." << endl;
-	}//*/
-
+	 for (int i = 0; i < numEnemies; i++) {
+	 cout << enemies[i].getRace() << " at " << enemies[i].getLoc().row << "," << enemies[i].getLoc().col << " is guarding hoard at " << enemies[i].hoardLoc().row << "," << enemies[i].hoardLoc().col << endl;
+	 }
+	 for (int i = 0; i < numGolds; i++) {
+	 string g = "";
+	 if        (!golds[i].isGuarded())
+	 {
+	 g = "not ";
+	 }
+	 cout << "Gold at " << golds[i].getLoc().row << "," << golds[i].getLoc().col << " is " << g << "guarded." << endl;
+	 }//*/
+	
 	player.setMessage("");
 	// Print list of posns in each chamber
 	/* BLOCK SAVED FOR TESTING
