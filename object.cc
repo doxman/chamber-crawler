@@ -360,7 +360,7 @@ bool Player::attack(Enemy * e){
 	m << getMessage() << "PC deals " << damage << " damage to " << e->getRace();
 	if (lethal) {
 		m << ", slaying it. ";
-		if (e->getRace() == "Phoenix")
+		if (e->getRace() == "Phoenix" && shinyDLC)
 		{
 			int heal = min(getDef(), (pRace.hp - getHP()));
 			m << "PC heals themself for " << heal << " health using the phoenix down. ";
