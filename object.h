@@ -40,6 +40,7 @@ const race GOBLIN = {70, 5, 10, "Goblin"};
 const race PHOENIX = {50, 35, 25, "Phoenix"};
 const race MERCHANT = {30, 70, 5, "Merchant"};
 const race DRAGON = {150, 20, 20, "Dragon"};
+const race EVILNINJA = {10, 100, 5, "Ninja"};
 
 // Potion types (uses race struct for convenience)
 const race RH = {10, 0, 0, "RH"};

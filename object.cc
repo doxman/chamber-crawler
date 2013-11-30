@@ -360,6 +360,12 @@ bool Player::attack(Enemy * e){
 	m << getMessage() << "PC deals " << damage << " damage to " << e->getRace();
 	if (lethal) {
 		m << ", slaying it. ";
+		if (e->getRace() == "Phoenix")
+		{
+			int heal = min(getDef(), (pRace.hp - getHP()));
+			m << "PC heals themself for " << heal << " health using the phoenix down. ";
+			setHP(getHP() + heal);
+		}
 	}
 	else
 	{
@@ -416,6 +422,8 @@ void Enemy::initRace(race r)
 			setObjectChar('N');
 		else if (eRace.name == "Phoenix")
 			setObjectChar('X');
+		else if (eRace.name == "Ninja")
+			setObjectChar(',');
 		else // except for goblin and phoenix, first character of name is also character on display
 			setObjectChar(eRace.name[0]);
 	}

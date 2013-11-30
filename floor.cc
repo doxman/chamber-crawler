@@ -187,7 +187,8 @@ void Floor::spawnObject(char c)
 	else if (c == ENEMY)
 	{
 		enemies[numEnemies].initLoc(temp);
-		choice = rand() % 18;
+		int spawnDivisor = shinyDLC ? 19 : 18;
+		choice = rand() % spawnDivisor;
 		if (choice < 4) // werewolf 2/9
 			enemies[numEnemies].initRace(WEREWOLF);
 		else if (choice < 7) // vampire 3/18
@@ -198,8 +199,10 @@ void Floor::spawnObject(char c)
 			enemies[numEnemies].initRace(TROLL);
 		else if (choice < 16) // phoenix 1/9
 			enemies[numEnemies].initRace(PHOENIX);
-		else                                   // merchant 1/9
+		else if (choice < 18) // merchant 1/9
 			enemies[numEnemies].initRace(MERCHANT);
+		else
+			enemies[numEnemies].initRace(EVILNINJA);
 		d.setChar(temp.row, temp.col, enemies[numEnemies].getObjectChar());
 		numEnemies++;
 	}
@@ -429,7 +432,7 @@ bool Floor::playerTurn()
 		else
 			checkRow = pRow, checkCol = pCol;
 		char c = d.getChar(checkRow, checkCol);
-		if (c == 'V' || c == 'W' || c == 'T' || c == 'N' || c == 'X' || c == 'M' || c == 'D')
+		if (c == 'V' || c == 'W' || c == 'T' || c == 'N' || c == 'X' || c == 'M' || c == 'D' || c == ',')
 		{
 			int enemyNum;
 			posn p;
@@ -493,10 +496,12 @@ bool Floor::playerTurn()
 	else if (temp == "r") // Restart code here
 	{
 		restart = true;
+		return false;
 	}
 	else if (temp == "q") // Quit code here
 	{
 		quit = true;
+		return false;
 	}
 	else if (temp == "oxmanly")
 	{
