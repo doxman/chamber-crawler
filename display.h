@@ -1,12 +1,70 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 #include <iostream>
+#include <vector>
 
-const int WIDTH = 79;
-const int HEIGHT = 25;
+const int HEIGHT = 25;		// Height of game map
+const int WIDTH = 79;		// Width of game map
 
-// Preposterously long char array constant used for default floor configuration.
-// Seriously. This takes up over a hundred lines by itself. If you want code, go to line 137.
+const int numChambers = 5;	// Number of chambers in a game map
+
+const char FLOOR = '.';		// Character used for dungeon floor tile
+							// (used in several important functions/methods)
+
+// Characters that correspond to objects on the game map
+const char PLAYER = '@';
+const char STAIRS = '\\';
+const char POTION = 'P';
+const char GOLD = 'G';
+const char ENEMY = 'D';	// Used because enemies are initialized to dragons
+
+// Number of directions (each representing one of 8 adjacent positions)
+const int numDirections = 8;
+
+// Null direction; used when a direction cannot be determined (due to incorrect input)
+const int nullDir = -1;
+
+// Directions (represented by integers 0 through 7, going northwest through southeast)
+const int NORTHWEST = 0;
+const int NORTH = 1;
+const int NORTHEAST = 2;
+const int WEST = 3;
+const int EAST = 4;
+const int SOUTHWEST = 5;
+const int SOUTH = 6;
+const int SOUTHEAST = 7;
+
+
+// Posn structure: Stores two integers that represent a position on the grid
+struct posn
+{
+	int row;
+	int col;
+	bool operator==(posn other);	// Checks equality for posns
+	
+	// Finds an adjacent posn (on the map) from a given directional constant
+	// If dir is not a directional constant, returns nullPosn
+	posn dirAdjacent(int dir);
+	
+	// Given a posn, finds the direction that points towards that posn
+	// and returns it as a directional constant
+	// Note that the given posn need not be adjacent
+	// but should NOT have the same coordinates as this object
+	int findDir(posn other);
+};
+
+// Null position used for uninitialized objects and invalid method input
+// Does not correspond to any position that could possibly be on the grid
+const posn nullPosn = {-1, -1};
+
+// Chamber structure: Stores a vector of posns that represent free tiles in a chamber
+struct Chamber
+{
+	std::vector<posn> tiles;
+};
+
+// Preposterously long (25 x 79) char array constant used as default display.
+// (Seriously. This takes up over 100 lines by itself. If you want code, go to line 200.)
 const char defaultFloor[HEIGHT][WIDTH] = 
 {
 {'|', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 
@@ -135,14 +193,37 @@ const char defaultFloor[HEIGHT][WIDTH] =
  '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', 
  '-', '-', '|'}};
 
+// Main display class; manages characters to be displayed and chamber generation
 class Display{
-	char display[HEIGHT][WIDTH];
+	char display[HEIGHT][WIDTH];		// 2D array of characters representing the map
+	Chamber chambers[numChambers];		// Array of chambers that stores the tiles in each
+	
+	// Recursive helper method used to flood the grid to distinguish the five chambers
+	void flood(char floodChar, int r, int c, int chamberNum);
+	
 public:
-	Display();
-	void setChar(int row, int col, char c);
-	char getChar(int row, int col);
-	void fixCharacters(); // Used to change displayed characters when reading map from file
+	Display();								// Constructor: Initializes display to default
+										//		Initializes chambers to empty
+	
+	// Methods that affect individual characters
+	void setChar(int row, int col, char c);	// Sets character at position (row, col)
+	char getChar(int row, int col);		// Returns character at position (row, col)
+	
+	// Methods that affect the whole display
+	void fixCharacters();  // Changes display characters after reading from file
+	void floodGrid()	   // Determines the chambers using a flooding algorithm
+	void unfloodGrid();	   // Resets characters changed by floodGrid() to empty floor tiles
+	
+	// Chamber methods
+	int getChamberSize(int c);	 	// Returns number of positions in a chamber
+	posn getTile(int c, int ind);	// Returns tile in chamber c with index ind
+	void occupyTile(int c, int ind);// Removes position at given index from a chamber
+	void emptyChambers(); 		 	// Resets all chambers to empty vectors
+	
+	// Reads display from an input stream (ie. a filestream)
 	friend std::istream &operator>>(std::istream &in, Display &d);
+	
+	// Writes display to an output stream (ie. cout)
 	friend std::ostream &operator<<(std::ostream &out, const Display &d);
 };
 
