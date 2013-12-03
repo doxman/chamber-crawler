@@ -4,48 +4,6 @@
 using namespace std;
 
 // PRIVATE METHODS
-void Floor::flood(char floodChar, char grid[][WIDTH], int r, int c, int chamberNum)
-{
-	posn temp = {r, c};
-	chambers[chamberNum].tiles.push_back(temp);
-	grid[r][c] = floodChar;
-	if (r > 0 && grid[r-1][c]==FLOOR)
-		flood(floodChar, grid, r-1, c, chamberNum);
-	if (r < (HEIGHT - 1) && grid[r+1][c]==FLOOR)
-		flood(floodChar, grid, r+1, c, chamberNum);
-	if (c > 0 && grid[r][c-1]==FLOOR)
-		flood(floodChar, grid, r, c-1, chamberNum);
-	if (c < (WIDTH - 1) && grid[r][c+1]==FLOOR)
-		flood(floodChar, grid, r, c+1, chamberNum);
-}
-void Floor::floodGrid (char grid[][WIDTH])
-{
-	char floodChar = 'a';
-	int chamberNum = floodChar - 'a';
-	for (int r = 0; r < HEIGHT; r++)
-	{
-		for (int c = 0; c < WIDTH; c++)
-		{
-			if (grid[r][c] == FLOOR)
-			{
-				flood(floodChar, grid, r,c, chamberNum);
-				floodChar++;
-				chamberNum++;
-			}
-		}
-	}
-}
-void Floor::unfloodGrid(char grid[][WIDTH])
-{
-	for (int i = 0; i < HEIGHT; i++)
-	{
-		for (int j = 0; j < WIDTH; j++)
-		{
-			if (grid[i][j] >= 'a' && grid[i][j] <= 'e') // If the tile was previously flooded
-				grid[i][j] = FLOOR;
-		}
-	}
-}
 void Floor::spawnObject(char c)
 {
 	int choice = -1; // Used to randomly select a chamber and pick object subtypes
@@ -61,10 +19,10 @@ void Floor::spawnObject(char c)
 	// Stores player's chamber value for reference later
 	if (c == PLAYER)
 		playerChamber = choice;
-	int numTiles = chambers[choice].tiles.size();
+	int numTiles = d.getChamberSize(choice);
 	int tileNumber = rand() % numTiles;
-	posn temp = chambers[choice].tiles[tileNumber];
-	chambers[choice].tiles.erase(chambers[choice].tiles.begin() + tileNumber);
+	posn temp = d.getTile(choice, tileNumber);
+	d.occupyTile(choice, tileNumber);
 	if (c == PLAYER)
 	{
 		player.initLoc(temp);
@@ -152,24 +110,8 @@ void Floor::spawnObject(char c)
 						golds[numGolds].initValue(DRAGON_HOARD);
 						golds[numGolds].setGuarded(true);
 						posn p = temp.dirAdjacent(i);
-						/*if (i == NORTH)
-						 p.row = temp.row - 1, p.col = temp.col;
-						 else if (i == NORTHWEST)
-						 p.row = temp.row - 1, p.col = temp.col - 1;
-						 else if (i == NORTHEAST)
-						 p.row = temp.row - 1, p.col = temp.col + 1;
-						 else if (i == WEST)
-						 p.row = temp.row, p.col = temp.col - 1;
-						 else if (i == EAST)
-						 p.row = temp.row, p.col = temp.col + 1;
-						 else if (i == SOUTHWEST)
-						 p.row = temp.row + 1, p.col = temp.col - 1;
-						 else if (i == SOUTHEAST)
-						 p.row = temp.row + 1, p.col = temp.col + 1;
-						 else
-						 p.row = temp.row + 1, p.col = temp.col;*/
 						enemies[numEnemies].initLoc(p);
-						enemies[numEnemies].initRace(DRAGON);
+						enemies[numEnemies].setRace(DRAGON);
 						enemies[numEnemies].initHoard(temp);
 						d.setChar(temp.row, temp.col, GOLD);
 						d.setChar(p.row, p.col, enemies[numEnemies].getObjectChar());
@@ -190,19 +132,19 @@ void Floor::spawnObject(char c)
 		int spawnDivisor = shinyDLC ? 19 : 18;
 		choice = rand() % spawnDivisor;
 		if (choice < 4) // werewolf 2/9
-			enemies[numEnemies].initRace(WEREWOLF);
+			enemies[numEnemies].setRace(WEREWOLF);
 		else if (choice < 7) // vampire 3/18
-			enemies[numEnemies].initRace(VAMPIRE);
+			enemies[numEnemies].setRace(VAMPIRE);
 		else if (choice < 12) // goblin 5/18
-			enemies[numEnemies].initRace(GOBLIN);
+			enemies[numEnemies].setRace(GOBLIN);
 		else if (choice < 14) // troll 1/9
-			enemies[numEnemies].initRace(TROLL);
+			enemies[numEnemies].setRace(TROLL);
 		else if (choice < 16) // phoenix 1/9
-			enemies[numEnemies].initRace(PHOENIX);
+			enemies[numEnemies].setRace(PHOENIX);
 		else if (choice < 18) // merchant 1/9
-			enemies[numEnemies].initRace(MERCHANT);
+			enemies[numEnemies].setRace(MERCHANT);
 		else
-			enemies[numEnemies].initRace(EVILNINJA);
+			enemies[numEnemies].setRace(EVILNINJA);
 		d.setChar(temp.row, temp.col, enemies[numEnemies].getObjectChar());
 		numEnemies++;
 	}
@@ -216,22 +158,6 @@ bool Floor::tryMove(int dir)
 	posn p = current.dirAdjacent(dir);
 	row = p.row;
 	col = p.col;
-	/*if (dir == NORTHWEST)
-	 row = current.row - 1, col = current.col - 1;
-	 else if (dir == NORTH)
-	 row = current.row - 1, col = current.col;
-	 else if (dir == NORTHEAST)
-	 row = current.row - 1, col = current.col + 1;
-	 else if (dir == WEST)
-	 row = current.row, col = current.col - 1;
-	 else if (dir == EAST)
-	 row = current.row, col = current.col + 1;
-	 else if (dir == SOUTHWEST)
-	 row = current.row + 1, col = current.col - 1;
-	 else if (dir == SOUTH)
-	 row = current.row + 1, col = current.col;
-	 else // southeast
-	 row = current.row + 1, col = current.col + 1;*/
 	if (d.getChar(row, col) == STAIRS) // go to next floor immediately
 	{
 		nextFloor();
@@ -257,10 +183,8 @@ bool Floor::tryMove(int dir)
 		}
 		else
 		{
-			//cout << "Guarded gold has value " << golds[goldNum].getValue() << endl;
 			player.setMessage(player.getMessage() + "Dragon scares PC away from their hoard. ");
 		}
-		// Add code for dragon hoards (value 6) later
 	}
 	// Can move if tile is floor, passage, or door (after gold is collected)
 	char target = d.getChar(row, col);
@@ -330,7 +254,7 @@ bool Floor::tryMove(int dir)
 			}
 		}
 	}
-	else // insulting message?
+	else
 	{
 		int randNum = rand() % 3;
 		if (target != GOLD)
@@ -338,7 +262,6 @@ bool Floor::tryMove(int dir)
 	}
 	return true;
 }
-
 bool Floor::playerTurn()
 {
 	int pRow = player.getLoc().row;
@@ -464,7 +387,7 @@ bool Floor::playerTurn()
 				}
 				else if (c == 'M')
 				{
-					golds[numGolds].setLoc(p);
+					golds[numGolds].initLoc(p);
 					golds[numGolds].initValue(MERCHANT_HOARD);
 					golds[numGolds].setGuarded(false);
 					d.setChar(checkRow, checkCol, GOLD);
@@ -472,7 +395,7 @@ bool Floor::playerTurn()
 				}
 				else
 				{
-					golds[numGolds].setLoc(p);
+					golds[numGolds].initLoc(p);
 					golds[numGolds].initValue(NORMAL);
 					golds[numGolds].setGuarded(false);
 					d.setChar(checkRow, checkCol, GOLD);
@@ -504,16 +427,9 @@ bool Floor::playerTurn()
 		return false;
 	}
 	else if (temp == "oxmanly")
-	{
 		player.oxmanly();
-	}
 	else if (temp == "grosslyoverpowered")
-	{
 		player.grosslyOverpowered();
-	}
-	else // Catch invalid strings
-	{
-	}
 	return true;
 }
 
@@ -555,7 +471,7 @@ void Floor::moveEnemy(Enemy *e)
 		open[i] = false;
 	int availableMoves = 0;
 	int counter = 0; // Goes through the 8 directions controlled by the array
-	if (shinyDLC && e->getRace() == "Troll")
+	if (shinyDLC && e->getName() == "Troll")
 	{
 		//Troll regen
 		e->setHP(min(e->getHP() + 5, 120));
@@ -569,14 +485,14 @@ void Floor::moveEnemy(Enemy *e)
 			if (d.getChar(i, j) == FLOOR)
 			{
 				open[counter] = true;
-				if (e->getRace()!= "Dragon") {
+				if (e->getName()!= "Dragon") {
 					availableMoves++; //Only can move if not a dragon
 				}
 			}
 			if (d.getChar(i, j) == PLAYER)
 			{
-				if ((angryMerchants || e->getRace()!= "Merchant")&&
-					(e->getRace()!= "Dragon" || ((abs(e->hoardLoc().row - i) <= 1)&&
+				if ((angryMerchants || e->getName()!= "Merchant")&&
+					(e->getName()!= "Dragon" || ((abs(e->hoardLoc().row - i) <= 1)&&
 												 (abs(e->hoardLoc().col - j) <= 1)))) {
 					availableMoves = -10;
 				}
@@ -596,7 +512,7 @@ void Floor::moveEnemy(Enemy *e)
 		}
 		return;
 	}
-	if (shinyDLC && (e->getRace() == "Werewolf" || e->getRace() == "Vampire"))
+	if (shinyDLC && (e->getName() == "Werewolf" || e->getName() == "Vampire"))
 	{
 		//These enemies will attempt to chase the player
 		int dir = e->getLoc().findDir(player.getLoc());
@@ -658,12 +574,8 @@ Floor::Floor(char pR, char *fN, bool dlc)
 	fileName = fN;
 	if (fN[0] != '/') // If name is not null, initialize filestream
 		fileIn = new ifstream(fN);
-	for (int i = 0; i < numChambers; i++)
-		chambers[i].tiles = vector<posn>();
 	for (int i = 0; i < numPotionTypes; i++)
-	{
 		knownPotions[i] = false;
-	}
 	floorNum = 1;
 	playerHP = 0;
 	playerGold = 0;
@@ -724,14 +636,8 @@ void Floor::init()
 		numPotions = 0;
 		numGolds = 0;
 		numEnemies = 0;
-		char temp [HEIGHT] [WIDTH];
-		for (int i = 0; i < HEIGHT; i++)
-		{
-			for (int j = 0; j < WIDTH; j++)
-				temp[i][j] = d.getChar(i, j);
-		}
-		floodGrid(temp);
-		unfloodGrid(temp);
+		d.floodGrid();
+		d.unfloodGrid();
 		spawnObject(PLAYER);
 		spawnObject(STAIRS);
 		while(numPotions < potionsSpawned)
@@ -807,17 +713,17 @@ void Floor::init()
 				{													// (any letter but 'D'
 					enemies[numEnemies].initLoc(p);
 					if (temp == 'W')      // werewolf 2/9
-						enemies[numEnemies].initRace(WEREWOLF);
+						enemies[numEnemies].setRace(WEREWOLF);
 					else if (temp == 'V') // vampire 3/18
-						enemies[numEnemies].initRace(VAMPIRE);
+						enemies[numEnemies].setRace(VAMPIRE);
 					else if (temp == 'N') // goblin 5/18
-						enemies[numEnemies].initRace(GOBLIN);
+						enemies[numEnemies].setRace(GOBLIN);
 					else if (temp == 'T') // troll 1/9
-						enemies[numEnemies].initRace(TROLL);
+						enemies[numEnemies].setRace(TROLL);
 					else if (temp == 'X') // phoenix 1/9
-						enemies[numEnemies].initRace(PHOENIX);
+						enemies[numEnemies].setRace(PHOENIX);
 					else                  // merchant 1/9
-						enemies[numEnemies].initRace(MERCHANT);
+						enemies[numEnemies].setRace(MERCHANT);
 					numEnemies++;
 				}
 			}
@@ -927,7 +833,7 @@ void Floor::init()
 							{									// Actually create the dragon
 								q = p.dirAdjacent(k);
 								enemies[numEnemies].initLoc(p);
-								enemies[numEnemies].initRace(DRAGON);
+								enemies[numEnemies].setRace(DRAGON);
 								enemies[numEnemies].initHoard(q);
 								d.setChar(q.row, q.col, 'G'); // Chosen hoard is now CLAIMED
 								d.setChar(p.row, p.col, 'E'); // Dragon is now SATISFIED
@@ -960,9 +866,9 @@ void Floor::init()
 void Floor::round()
 {
 	bool turn = playerTurn();
-	if(player.getRace() == "Ninja")
+	if(player.getName() == "Ninja")
 		print();
-	if (turn && (player.getRace() != "Ninja" || playerTurn())) // If player did not go up a floor, move the enemies
+	if (turn && (player.getName() != "Ninja" || playerTurn())) // If player did not go up a floor, move the enemies
 	{
 		
 		sortEnemies();
@@ -975,7 +881,7 @@ void Floor::print()
 {
 	cout << d;
 	stringstream s;
-	s << "Race: " << player.getRace() << " Gold: " << player.getGold();
+	s << "Race: " << player.getName() << " Gold: " << player.getGold();
 	cout << s.str();
 	int num = s.str().length();
 	for (int i = num; i < 69; i++)
@@ -985,40 +891,7 @@ void Floor::print()
 	cout << "Atk: " << player.getAtk() << endl;
 	cout << "Def: " << player.getDef() << endl;
 	cout << "Action: " << player.getMessage() << endl;
-	
-	/*
-	 for (int i = 0; i < numEnemies; i++) {
-	 cout << enemies[i].getRace() << " at " << enemies[i].getLoc().row << "," << enemies[i].getLoc().col << " is guarding hoard at " << enemies[i].hoardLoc().row << "," << enemies[i].hoardLoc().col << endl;
-	 }
-	 for (int i = 0; i < numGolds; i++) {
-	 string g = "";
-	 if        (!golds[i].isGuarded())
-	 {
-	 g = "not ";
-	 }
-	 cout << "Gold at " << golds[i].getLoc().row << "," << golds[i].getLoc().col << " is " << g << "guarded." << endl;
-	 }//*/
-	
 	player.setMessage("");
-	// Print list of posns in each chamber
-	/* BLOCK SAVED FOR TESTING
-	 for (int i = 0; i < numChambers; i++)
-	 {
-	 cout << "Chamber: " << i << endl;
-	 int numTiles = chambers[i].tiles.size();
-	 for (int j = 0; j < numTiles; j++)
-	 cout << "(" << chambers[i].tiles[j].row << ", "
-	 << chambers[i].tiles[j].col << ")" << endl;
-	 }
-	 // BLOCK SAVED FOR TESTING*/
-	// Print coordinates of each enemy, in sorted order
-	/* BLOCK SAVED FOR TESTING
-	 for (int i = 0; i < numEnemies; i++)
-	 {
-	 cout << "Enemy " << i << " position: " << enemies[i].getLoc().row
-	 << ", " << enemies[i].getLoc().col << endl;
-	 }
-	 // BLOCK SAVED FOR TESTING*/
 }
 void Floor::nextFloor()
 {
@@ -1039,11 +912,7 @@ void Floor::nextFloor()
 	// Empty chambers ONLY IF CHAMBERS WERE USED (ie. when not reading from file)
 	if (fileName[0] == '/')
 	{
-		for (i = 0; i < numChambers; i++)
-		{
-			while (chambers[i].tiles.size() > 0)
-				chambers[i].tiles.pop_back();
-		}
+		d.emptyChambers();
 	}
 	if (floorNum <= 8)
 		init();
@@ -1053,7 +922,7 @@ void Floor::endGame()
 	if(floorNum > 8)
 	{
 		int score = player.getGold();
-		if (player.getRace() == "Human")
+		if (player.getName() == "Human")
 		{
 			score += score / 2;
 		}
