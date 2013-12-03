@@ -5,8 +5,10 @@ int main (int argc, char *argv[])
 {
 	char temp = ' ';
 	string tempstr = "/"; // This character can't appear in actual filenames
-	char *fileName = const_cast<char*>(tempstr.c_str());// Improve this if possible; inefficient!
-	if (argc > 1) // May want to change this later for random seed support
+						  // As such, it's used in the case where no filename is given
+						  // Essentially, it represents the default floor layout
+	char *fileName = const_cast<char*>(tempstr.c_str());
+	if (argc > 1)
 		fileName = argv[1];	
 	Floor *f;
 	while (temp != 'n' && temp != 'y')
@@ -28,6 +30,7 @@ int main (int argc, char *argv[])
 		}
 		if (temp == 'q') // Exit option
 			return 0;
+		
 		f = new Floor(temp, fileName, shinyDLC);
 		f->init();
 		f->print();
