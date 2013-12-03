@@ -6,102 +6,14 @@
 using namespace std;
 
 // Equality test for races
-bool operator==(race arg1, race arg2)
+bool race::operator==(race other)
 {
-	if (arg1.hp == arg2.hp && arg1.atk == arg2.atk && arg1.def == arg2.def
-		&& arg1.name == arg2.name)
-		return true;
-	return false;
-}
-//equality test for posns
-bool operator==(posn arg1, posn arg2)
-{
-	if (arg1.row == arg2.row && arg1.col == arg2.col)
+	if (hp == other.hp && atk == other.atk && def == other.def
+		&& name == other.name)
 		return true;
 	return false;
 }
 
-//dir should be a directional constant
-
-posn posn::dirAdjacent(int dir)
-{
-	posn p;
-	if (dir == NORTH)
-		p.row = row - 1, p.col = col;
-	else if (dir == NORTHWEST)
-		p.row = row - 1, p.col = col - 1;
-	else if (dir == NORTHEAST)
-		p.row = row - 1, p.col = col + 1;
-	else if (dir == WEST)
-		p.row = row, p.col = col - 1;
-	else if (dir == EAST)
-		p.row = row, p.col = col + 1;
-	else if (dir == SOUTHWEST)
-		p.row = row + 1, p.col = col - 1;
-	else if (dir == SOUTHEAST)
-		p.row = row + 1, p.col = col + 1;
-	else // south
-		p.row = row + 1, p.col = col;
-	return p;
-}
-//other should not be the same location as this
-int posn::findDir(posn other)
-{
-	/*(if (other.row > row)
-	{
-		if (other.col > col) {
-			return SOUTHEAST;
-		}
-		else if (other.col < col)
-		{
-			return SOUTHWEST;
-		}
-		else
-		{
-			return SOUTH;
-		}
-	}
-	else if (other.row < row)
-	{
-		if (other.col > col) {
-			return NORTHEAST;
-		}
-		else if (other.col < col)
-		{
-			return NORTHWEST;
-		}
-		else
-		{
-			return NORTH;
-		}
-	}
-	else
-	{
-		if (other.col > col) {
-			return EAST;
-		}
-		else
-		{
-			return WEST;
-		}
-	}//*/
-	if (other.col > col && other.row > row)
-		return SOUTHEAST;
-	else if (other.col > col && other.row == row)
-		return EAST;
-	else if (other.col > col && other.row < row)
-		return NORTHEAST;
-	else if (other.col == col && other.row > row)
-		return SOUTH;
-	else if (other.col == col && other.row < row)
-		return NORTH;
-	else if (other.col < col && other.row > row)
-		return SOUTHWEST;
-	else if (other.col < col && other.row == row)
-		return WEST;
-	else
-		return NORTHWEST;
-}
 // Object class
 void Object::setObjectChar(char c) // protected
 {
@@ -127,55 +39,40 @@ void Object::initLoc(posn p)
 }
 
 Stairs::Stairs(): Object(STAIRS) {}
-void Stairs::die(){}
 
 Potion::Potion(): Object(POTION)
 {
-	hpMod = 0;
-	atkMod = 0;
-	defMod = 0;
-	type = "WATER";
+	pRace = WATER;
 }
 void Potion::initPotion(race p)
 {
-	if (type == "WATER")
+	if (pRace.name == "WATER")
 	{
-		hpMod = p.hp;
-		atkMod = p.atk;
-		defMod = p.def;
-		type = p.name;
+		pRace.hp = p.hp;
+		pRace.atk = p.atk;
+		pRace.def = p.def;
+		pRace.name = p.name;
 	}
 }
-int Potion::getHP() {return hpMod;}
-int Potion::getAtk() {return atkMod;}
-int Potion::getDef() {return defMod;}
-string Potion::getType() {return type;}
+int Potion::getHP() {return pRace.hp;}
+int Potion::getAtk() {return pRace.atk;}
+int Potion::getDef() {return pRace.def;}
+string Potion::getType() {return pRace.name;}
 int Potion::getTypeNum()
 {
-	if (type == "RH") {
+	if (pRace.name == "RH")
 		return 0;
-	}
-	else if (type == "BA")
-	{
+	else if (pRace.name == "BA")
 		return 1;
-	}
-	else if (type == "BD")
-	{
+	else if (pRace.name == "BD")
 		return 2;
-	}
-	else if (type == "PH")
-	{
+	else if (pRace.name == "PH")
 		return 3;
-	}
-	else if (type == "WA")
-	{
+	else if (pRace.name == "WA")
 		return 4;
-	}else
-	{
+	else
 		return 5;
-	}
 }
-void Potion::die(){}
 
 Gold::Gold(): Object(GOLD), value(0), guarded(false){}
 void Gold::initValue(int v)
@@ -195,42 +92,16 @@ int Gold::getValue()
 {
 	return value;
 }
-void Gold::die(){}
 
 // Character superclass for Player and Enemy
 void Character::setHP(int hp)
 {
 	currentHP = hp;
 }
-void Character::setAtk(int atk)
-{
-	currentAtk = atk;
-}
-void Character::setDef(int def)
-{
-	currentDef = def;
-}
-Character::Character(char oC): Object(oC) {}
+Character::Character(char oC): Object(oC), cRace(DRAGON) {}
 void Character::move(int dir)
 {
 	posn current = getLoc();
-	//posn p;
-	/*if (dir == NORTH)
-		p.row = current.row - 1, p.col = current.col;
-	else if (dir == NORTHWEST)
-		p.row = current.row - 1, p.col = current.col - 1;
-	else if (dir == NORTHEAST)
-		p.row = current.row - 1, p.col = current.col + 1;
-	else if (dir == WEST)
-		p.row = current.row, p.col = current.col - 1;
-	else if (dir == EAST)
-		p.row = current.row, p.col = current.col + 1;
-	else if (dir == SOUTHWEST)
-		p.row = current.row + 1, p.col = current.col - 1;
-	else if (dir == SOUTHEAST)
-		p.row = current.row + 1, p.col = current.col + 1;
-	else
-		p.row = current.row + 1, p.col = current.col;*/
 	setLoc(current.dirAdjacent(dir));
 }
 int Character::getHP()
@@ -239,15 +110,41 @@ int Character::getHP()
 }
 int Character::getAtk()
 {
-	return currentAtk;
+	return cRace.atk;
 }
 int Character::getDef()
 {
-	return currentDef;
+	return cRace.def;
+}
+string Character::getName()
+{
+	return cRace.name;
+}
+race Character::getRace()
+{
+	return cRace;
+}
+void Character::setRace(race r)
+{
+	cRace = r;
+	setHP(cRace.hp);
+	// Set up character accordingly
+	if (cRace.name == "Human" ||
+		cRace.name == "Dwarf" || cRace.name == "Elf" ||
+	    cRace.name == "Orc" || cRace.name == "Ninja") // Possible player races
+	    setObjectChar('@');
+	else if (cRace.name == "Goblin")
+		setObjectChar('N');
+	else if (cRace.name == "Phoenix")
+		setObjectChar('X');
+	else if (cRace.name == "Evil Ninja")
+		setObjectChar(',');
+	else // except for these, first character of name is also the character displayed
+		setObjectChar(cRace.name[0]);
 }
 
 // Subclasses
-Player::Player(): Character(PLAYER), tileChar(FLOOR), pRace(HUMAN)
+Player::Player(): Character(PLAYER), tileChar(FLOOR)
 {
 	gold = 0;
 	shinyDLC = false;
@@ -255,6 +152,22 @@ Player::Player(): Character(PLAYER), tileChar(FLOOR), pRace(HUMAN)
 	setHP(HUMAN.hp);
 	setAtk(HUMAN.atk);
 	setDef(HUMAN.def);
+}
+void Player::setAtk(int atk)
+{
+	currentAtk = atk;
+}
+void Player::setDef(int def)
+{
+	currentDef = def;
+}
+int Player::getAtk()
+{
+	return currentAtk;
+}
+int Player::getDef()
+{
+	return currentDef;
 }
 char Player::getTileChar()
 {
@@ -267,10 +180,6 @@ void Player::setTileChar(char c)
 double Player::getGold()
 {
 	return gold;
-}
-string Player::getRace()
-{
-	return pRace.name;
 }
 string Player::getMessage()
 {
@@ -287,36 +196,37 @@ void Player::initGold(double g) // Make this more selective later
 }
 void Player::initHP(int hp) // Make this more selective later
 {
-	if (getHP() == pRace.hp)
+	if (getHP() == getRace().hp)
 		setHP(hp);
 }
 void Player::initRace(char c)
 {
 	if (c == 'h')
-		pRace = HUMAN;
+		setRace(HUMAN);
 	else if (c == 'd')
-		pRace = DWARF;
+		setRace(DWARF);
 	else if (c == 'e')
-		pRace = ELF;
+		setRace(ELF);
 	else if (c == 'o')
-		pRace = ORC;
+		setRace(ORC);
 	else if (c == 'n')
-		pRace = NINJA;
+		setRace(NINJA);
 		
 	// Sets current stats to match race
-	setHP(pRace.hp);
-	setAtk(pRace.atk);
-	setDef(pRace.def);
+	setHP(getRace().hp);
+	setAtk(getRace().atk);
+	setDef(getRace().def);
 }
-void Player::initDLC(bool dlc){
+void Player::initDLC(bool dlc)
+{
 	shinyDLC = dlc;
 }
 void Player::addGold(double value)
 {
 	double collected;
-	if (pRace == DWARF)
+	if (getRace() == DWARF)
 		collected = 2 * value;
-	else if (pRace == ORC)
+	else if (getRace() == ORC)
 		collected = value / 2;
 	else
 		collected = value;
@@ -327,7 +237,7 @@ void Player::addGold(double value)
 }
 void Player::usePotion(Potion &p)
 {
-	if(pRace == ELF)
+	if(getRace() == ELF)
 	{
 		setHP(getHP() + abs(p.getHP()));
 		setAtk(getAtk() + abs(p.getAtk()));
@@ -339,8 +249,8 @@ void Player::usePotion(Potion &p)
 		setAtk(getAtk() + p.getAtk());
 		setDef(getDef() + p.getDef());
 	}
-	if (getHP() > pRace.hp)
-		setHP(pRace.hp);
+	if (getHP() > getRace().hp)
+		setHP(getRace().hp);
 	if (getHP() < 0)
 		setHP(0);
 	if (getAtk() < 0)
@@ -350,19 +260,19 @@ void Player::usePotion(Potion &p)
 	stringstream m;
 	m << getMessage() << "PC uses " << p.getType() << ". ";
 	setMessage(m.str());
-	
 }
-bool Player::attack(Enemy * e){
+bool Player::attack(Enemy * e)
+{
 	double damage = ceil((100.0/(100.0 + (double)e->getDef()))*((double)getAtk()));
 	e->setHP((e->getHP()-damage));
 	bool lethal = (e->getHP() <= 0);
 	stringstream m;
-	m << getMessage() << "PC deals " << damage << " damage to " << e->getRace();
+	m << getMessage() << "PC deals " << damage << " damage to " << e->getName();
 	if (lethal) {
 		m << ", slaying it. ";
-		if (e->getRace() == "Phoenix" && shinyDLC)
+		if (e->getName() == "Phoenix" && shinyDLC)
 		{
-			int heal = min(getDef(), (pRace.hp - getHP()));
+			int heal = min(getDef(), (getRace().hp - getHP()));
 			m << "PC heals themself for " << heal << " health using the phoenix down. ";
 			setHP(getHP() + heal);
 		}
@@ -373,16 +283,16 @@ bool Player::attack(Enemy * e){
 	}
 	setMessage(m.str());
 	return lethal;
-	
 }
-bool Player::getAttacked(Enemy * e){
+bool Player::getAttacked(Enemy * e)
+{
 	int hit = rand() % 2;
 	stringstream m;
 	if (hit == 1) {
 		int damage = ceil((100.0/(100.0 + (double)getDef()))*((double)e->getAtk()));
 		setHP((getHP()-damage));
-		m << getMessage() << e->getRace() << " deals " << damage << " damage to PC. ";
-		if (shinyDLC && e->getRace() == "Vampire")
+		m << getMessage() << e->getName() << " deals " << damage << " damage to PC. ";
+		if (shinyDLC && e->getName() == "Vampire")
 		{
 			int heal = min(damage / 5, (50 - e->getHP()));
 			e->setHP(e->getHP() + heal);
@@ -390,61 +300,29 @@ bool Player::getAttacked(Enemy * e){
 		}
 	}
 	else
-	{
-		m << getMessage() << e->getRace() << " attacks and misses PC. ";
-	}
+		m << getMessage() << e->getName() << " attacks and misses PC. ";
 	setMessage(m.str());
 	return (getHP() <= 0);
 }
 void Player::oxmanly()
 {
-	setDef(9001 * getDef());
+	if (getDef() < 9001)
+		setDef(9001 * getDef());
 	setMessage(getMessage() + "PC becomes Oxmanly! ");
 }
 void Player::grosslyOverpowered()
 {
-	setAtk(144 * getAtk());
+	if (getAtk() < 20736)
+		setAtk(144 * getAtk());
 	setMessage(getMessage() + "PC becomes Grossly Overpowered! ");
 }
-void Player::die(){}
 
-// Since dragons are generated before other enemies, default race should be dragon! (?)
-Enemy::Enemy(): Character(ENEMY), eRace(DRAGON), hoard(nullPosn){}
-void Enemy::initRace(race r)
-{
-	if (eRace == DRAGON)
-	{
-		eRace = r;
-		setHP(eRace.hp);
-		setAtk(eRace.atk);
-		setDef(eRace.def);
-		if (eRace.name == "Goblin")
-			setObjectChar('N');
-		else if (eRace.name == "Phoenix")
-			setObjectChar('X');
-		else if (eRace.name == "Ninja")
-			setObjectChar(',');
-		else // except for goblin and phoenix, first character of name is also character on display
-			setObjectChar(eRace.name[0]);
-	}
-}
-string Enemy::getRace()
-{
-	return eRace.name;
-}
-
+Enemy::Enemy(): Character(ENEMY), hoard(nullPosn){}
 void Enemy::initHoard(posn p)
 {
 	hoard = p;
 }
-/*void Enemy::freeHoard()
-{
-	cout << "The hoard at " << hoardLoc().row << "," << hoardLoc().col << " is now unguarded" << endl;
-	hoard->setGuarded(false);
-}*/
 posn Enemy::hoardLoc()
 {
 	return hoard;
 }
-
-void Enemy::die(){}
