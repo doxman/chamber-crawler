@@ -435,7 +435,7 @@ bool Floor::playerTurn()
 
 void Floor::sortEnemies()
 {
-	Enemy sorted[numEnemies];
+	Enemy *sorted = new Enemy[numEnemies];
 	int numSorted = 0;
 	int currentMin; // Value of smallest remaining element: (79 * row) + col
 	int minIndex; // Location of smallest remaining element
@@ -461,6 +461,7 @@ void Floor::sortEnemies()
 	// Sorted; now set established array to be sorted
 	for (int i = 0; i < numEnemies; i++)
 		enemies[i] = sorted[i];
+	delete[] sorted;
 }
 
 void Floor::moveEnemy(Enemy *e)

@@ -211,7 +211,7 @@ public:
 	
 	// Methods that affect the whole display
 	void fixCharacters();  // Changes display characters after reading from file
-	void floodGrid()	   // Determines the chambers using a flooding algorithm
+	void floodGrid();	   // Determines the chambers using a flooding algorithm
 	void unfloodGrid();	   // Resets characters changed by floodGrid() to empty floor tiles
 	
 	// Chamber methods
